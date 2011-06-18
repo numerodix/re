@@ -24,14 +24,14 @@ class Git(object):
         return val
 
     @classmethod
-    def set_conf_key(self, path, key, value):
+    def set_conf_key(cls, path, key, value):
         ret, out, err = ioutils.invoke(path, ['git', 'config', key, value])
         if ret:
             log.error("Could not set config %s=%s for '%s': %s" % \
                       (key, value, path, err))
 
     @classmethod
-    def get_remotes(self, path):
+    def get_remotes(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'remote'])
         if not out:
             val = []
@@ -42,14 +42,60 @@ class Git(object):
         return val
 
     @classmethod
-    def remove_remote(self, path, name):
+    def remove_remote(cls, path, name):
         ret, out, err = ioutils.invoke(path, ['git', 'remote', 'rm', name])
         if ret:
             log.error("Could not remove remote %s for '%s': %s" % \
                       (name, path, err))
 
     @classmethod
-    def add_remote(self, path, name, url):
+    def get_branches_local(cls, path):
+        ret, out, err = ioutils.invoke(path, ['git', 'branch'])
+        if not out:
+            val = []
+            log.warn("Could not get branches for '%s': %s" % \
+                     (path, err))
+        else:
+            lst = out.split('\n')
+            val = []
+            for br in lst:
+                name = br
+                active = br[:2] == '* ' and True or False
+                if active:
+                    name = br[2:]
+                val.append( (active, name) )
+        return val
+
+    @classmethod
+    def get_branches_remote_tracking(cls, path):
+        ret, out, err = ioutils.invoke(path, ['git', 'branch', '-r'])
+        if not out:
+            val = []
+            log.warn("Could not get branches for '%s': %s" % \
+                     (path, err))
+        else:
+            val = out.split('\n')
+            val = map(lambda s: re.sub(r'^\s*', '', s), val)
+        return val
+
+    @classmethod
+    def get_branches_remote(cls, path, remote):
+        ret, out, err = ioutils.invoke(path, ['git', 'ls-remote', remote])
+        if not out:
+            val = []
+            log.warn("Could not get branches for '%s': %s" % \
+                     (path, err))
+        else:
+            lst = out.split('\n')
+            val = []
+            for line in lst:
+                name = re.sub(r'^(?i)[a-z0-9]+\s+', '', line)
+                if re.match(r'^refs/heads/.*', name):
+                    val.append(name)
+        return val
+
+    @classmethod
+    def add_remote(cls, path, name, url):
         ret, out, err = ioutils.invoke(path, ['git', 'remote', 'add', name, url])
         if ret:
             log.error("Could not add remote %s=%s for '%s': %s" % \

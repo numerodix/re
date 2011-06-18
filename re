@@ -44,8 +44,13 @@ class Program(object):
                 clean = False
 
         if clean:
+            to_merge = []
             for repo in repo_manager.active_repos():
-                repo.cmd_fetch()
+                if repo.cmd_fetch():
+                    to_merge.append(repo)
+
+            for repo in to_merge:
+                repo.cmd_merge()
 
 
 

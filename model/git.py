@@ -21,11 +21,16 @@ class StrFmt(object):
     def fmt_remote_key(cls, name, url):
         return 'remote.%s.%s' % (name, url)
 
+    @classmethod
+    def split_branch_longname(cls, name):
+        return name.split('/')
+
 
 class Branch(object):
     """
     name            maint
     longname        maint                       (Local)
+    is_active       False
                     remotes/origin/maint        (RemoteTracking)
                     refs/heads/maint            (Remote)
     type            Local | RemoteTracking | Remote
@@ -39,6 +44,21 @@ class Branch(object):
 
     query remote branches: git ls-remote origin
     """
+
+class BranchLocal(Branch):
+    def __init__(self, name, is_active):
+        self.name = name
+        self.is_active = is_active
+class BranchRemoteTracking(Branch):
+    def __init__(self, remote, longname, name):
+        self.remote = remote
+        self.longname = longname
+        self.name = name
+class BranchRemote(Branch):
+    def __init__(self, remote, longname, name):
+        self.remote = remote
+        self.longname = longname
+        self.name = name
 
 class Remote(object):
     """
@@ -58,6 +78,8 @@ class Remote(object):
         self.name = name and name or 'origin'
         self.is_canonical = False
         self.urls = {}
+        self.branches_tracking = {}
+        self.branches_remote = {}
 
 
 class GitRepo(object):
@@ -79,6 +101,7 @@ class GitRepo(object):
         self.path = path
         self.is_active = False
         self.remotes = {}
+        self.branches = {}
 
     ### To and from cfg
 
@@ -169,6 +192,33 @@ class GitRepo(object):
         Git.repo_init(self.path)
         self.set_remotes_in_checkout()
 
+    def detect_branches(self):
+        for is_active, name in Git.get_branches_local(self.path):
+            branch = BranchLocal(name, is_active)
+            self.branches[name] = branch
+
+        for longname in Git.get_branches_remote_tracking(self.path):
+            if 'HEAD' in longname:  # special case
+                continue
+            remote, name = StrFmt.split_branch_longname(longname)
+            remote = self.remotes[remote]
+            branch = BranchRemoteTracking(remote, longname, name)
+            remote.branches_tracking[name] = branch
+
+        for remote in self.remotes.values():
+            for longname in Git.get_branches_remote(self.path, remote.name):
+                if 'HEAD' in longname:  # special case
+                    continue
+                _, _, name = StrFmt.split_branch_longname(longname)
+                branch = BranchRemote(remote, longname, name)
+                remote.branches_remote[name] = branch
+
+    def __show_branches(self):
+        for br in self.branches.items(): print 'local', br
+        for r in self.remotes.values():
+            for br in r.branches_tracking.items(): print r.name, br
+            for br in r.branches_remote.items(): print r.name, br
+
     ### Commands
 
     def cmd_fetch(self):
@@ -186,3 +236,14 @@ class GitRepo(object):
         else:
             ioutils.action_failed('Failed fetching %s' % self.path)
         return success
+
+    def cmd_merge(self):
+        ioutils.action_preface('Trying to merge %s' % self.path)
+
+        success = True
+        self.detect_branches()
+
+        if success:
+            ioutils.action_succeeded('Finished merging %s' % self.path)
+        else:
+            ioutils.action_failed('Failed merging %s' % self.path)
