@@ -20,7 +20,7 @@ def invoke(cwd, args):
     elif out:
         lines = out.split('\n')
         for line in lines:
-            log.debug("  %s" % ansicolor.blue(line))
+            log.debug("| %s" % ansicolor.blue(line))
     return ret, out, err
 
 
