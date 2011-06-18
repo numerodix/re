@@ -1,3 +1,5 @@
+import utils
+
 class Branch(object):
     """
     name            maint
@@ -75,19 +77,14 @@ class GitRepo(object):
         # find canonical remote
         remotes = filter(lambda r: r.is_canonical, self.remotes.values())
         name = remotes[0].name
-
         names = self.remotes.keys()
-        names.sort()
-        names.remove(name)
-        names.insert(0, name)
+        names = utils.sort_with_elem_as_first(name, names)
 
         for key in names:
             remote = self.remotes[key]
 
             urls = remote.urls.keys()
-            urls.sort()
-            urls.remove('url')
-            urls.insert(0, 'url')
+            urls = utils.sort_with_elem_as_first('url', urls)
 
             for att in urls:
                 val = remote.urls[att]
