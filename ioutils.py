@@ -29,7 +29,7 @@ def inform(msg, minor=False):
         ansicolor.write_out(ansicolor.green('> %s\n' % msg))
 
 def suggest(msg):
-    ansicolor.write_out(ansicolor.cyan('> %s\n' % msg))
+    ansicolor.write_out(ansicolor.magenta('> %s\n' % msg))
 
 def complain(msg):
     ansicolor.write_out(ansicolor.yellow('> %s\n' % msg))
