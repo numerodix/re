@@ -1,8 +1,12 @@
+import logging
 import os
 
 from backends import Git
+from consts import CANONICAL_REMOTE
 import ioutils
 import utils
+
+log = logging
 
 class StrFmt(object):
     @classmethod
@@ -75,7 +79,7 @@ class Remote(object):
     """
 
     def __init__(self, name=None):
-        self.name = name and name or 'origin'
+        self.name = name and name or CANONICAL_REMOTE
         self.is_canonical = False
         self.urls = {}
         self.branches_tracking = {}
@@ -192,6 +196,22 @@ class GitRepo(object):
         Git.repo_init(self.path)
         self.set_remotes_in_checkout()
 
+    def get_canonical_remote(self):
+        remote = None
+        for r in self.remotes.values():
+            if r.is_canonical:
+                remote = r
+
+        if not remote:
+            remotes = filter(lambda r: r.name == CANONICAL_REMOTE, self.remotes.keys())
+            if remotes:
+                remote = self.remotes[remotes[0]]
+
+        if not remote:
+            remote = self.remotes[self.remotes.keys()[0]]
+
+        return remote
+
     def detect_branches(self):
         for is_active, name in Git.get_branches_local(self.path):
             branch = BranchLocal(name, is_active)
@@ -213,25 +233,46 @@ class GitRepo(object):
                 branch = BranchRemote(remote, longname, name)
                 remote.branches_remote[name] = branch
 
-    def __show_branches(self):
-        for br in self.branches.items(): print 'local', br
+        log.debug(self.print_branches())
+
+    def print_branches(self):
+        def fmt(remote, cls, branch):
+            name, _ = branch
+            type = cls.__name__
+            return '%-14.14s   %-25.25s   %s\n' % (remote, name, type)
+
+        s = ''
+        for br in self.branches.items():
+            s += fmt('local', BranchLocal, br)
         for r in self.remotes.values():
-            for br in r.branches_tracking.items(): print r.name, br
-            for br in r.branches_remote.items(): print r.name, br
+            for br in r.branches_tracking.items():
+                s += fmt(r.name, BranchRemoteTracking, br)
+            for br in r.branches_remote.items():
+                s += fmt(r.name, BranchRemote, br)
+        s = 'Branches:\n' + s
+        return s.strip()
 
     def remove_stale_remote_tracking_branches(self):
         for remote in self.remotes.values():
             for tracking in remote.branches_tracking:
                 if not tracking in remote.branches_remote:
-                    ioutils.action_preface(\
+                    ioutils.inform(\
                        'Removing stale remote tracking branch %s' % tracking, minor=True)
                     Git.remove_remote_tracking_branch(self.path, remote.name,
                                                       tracking)
 
+    def setup_local_tracking_branches(self):
+        remote = self.get_canonical_remote()
+        for tracking in remote.branches_tracking:
+            if tracking not in self.branches:
+                ioutils.inform('Setting up local tracking branch %s' % tracking,
+                               minor=True)
+                Git.add_local_tracking_branch(self.path, remote.name, tracking)
+
     ### Commands
 
     def cmd_fetch(self):
-        ioutils.action_preface('Trying to fetch %s' % self.path)
+        ioutils.inform('Fetching %s' % self.path)
 
         if not os.path.exists(self.path):
             self.do_init_repo()
@@ -240,20 +281,17 @@ class GitRepo(object):
         for remote in self.remotes.values():
             success = success and Git.fetch(self.path, remote.name)
 
-        if success:
-            ioutils.action_succeeded('Finished fetching %s' % self.path)
-        else:
-            ioutils.action_failed('Failed fetching %s' % self.path)
+        if not success:
+            ioutils.complain('Failed fetching %s' % self.path)
         return success
 
     def cmd_merge(self):
-        ioutils.action_preface('Trying to merge %s' % self.path)
+        ioutils.inform('Merging %s' % self.path)
 
         success = True
         self.detect_branches()
         self.remove_stale_remote_tracking_branches()
+        self.setup_local_tracking_branches()
 
-        if success:
-            ioutils.action_succeeded('Finished merging %s' % self.path)
-        else:
-            ioutils.action_failed('Failed merging %s' % self.path)
+        if not success:
+            ioutils.complain('Failed merging %s' % self.path)

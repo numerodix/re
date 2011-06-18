@@ -19,21 +19,12 @@ def invoke(cwd, args):
         log.warn("[%s] '%s' returned %s" % (cwd, ' '.join(args), err))
     return ret, out, err
 
-def action_preface(msg, minor=False):
+
+def inform(msg, minor=False):
     if minor:
-        ansicolor.write_out(ansicolor.cyan(' ---> %s\n' % msg))
+        ansicolor.write_out(ansicolor.cyan('-> %s\n' % msg))
     else:
-        ansicolor.write_out(ansicolor.yellow(' ===> %s\n' % msg))
-
-def action_succeeded(msg):
-    ansicolor.write_out(ansicolor.green('      %s\n' % msg))
-
-def action_failed(msg):
-    ansicolor.write_out(ansicolor.red('      %s\n' % msg))
-
-
-def inform(msg):
-    ansicolor.write_out(ansicolor.green('> %s\n' % msg))
+        ansicolor.write_out(ansicolor.green('> %s\n' % msg))
 
 def suggest(msg):
     ansicolor.write_out(ansicolor.cyan('> %s\n' % msg))

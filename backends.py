@@ -59,10 +59,10 @@ class Git(object):
             lst = out.split('\n')
             val = []
             for br in lst:
-                name = br
-                active = br[:2] == '* ' and True or False
-                if active:
-                    name = br[2:]
+                active = False
+                if re.match(r'^[*] .*', br):
+                    active = True
+                name = re.sub(r'^[*]?\s*', '', br)
                 val.append( (active, name) )
         return val
 
@@ -101,6 +101,14 @@ class Git(object):
         if ret:
             log.error("Could not remove remote tracking branch %s/%s for '%s': %s" % \
                       (remote, branch, path, err))
+
+    @classmethod
+    def add_local_tracking_branch(cls, path, remote, branch):
+        arg = '%s/%s' % (remote, branch)
+        ret, out, err = ioutils.invoke(path, ['git', 'branch', '--track', branch, arg])
+        if ret:
+            log.error("Could not add local tracking branch %s for '%s': %s" % \
+                      (branch, path, err))
 
     @classmethod
     def add_remote(cls, path, name, url):
