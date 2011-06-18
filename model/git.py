@@ -139,11 +139,18 @@ class GitRepo(object):
         return repo
 
     def set_remotes_in_checkout(self):
-        names = Git.get_remotes(self.path)
-        names = filter(lambda n: n not in self.remotes, names)
+        # remove remotes not in model
+        remotes_names = Git.get_remotes(self.path)
+        names = filter(lambda n: n not in self.remotes, remotes_names)
         for name in names:
             Git.remove_remote(self.path, name)
 
+        # add remotes not in checkout
+        names = filter(lambda n: n not in remotes_names, self.remotes.keys())
+        for name in names:
+            Git.add_remote(self.path, name, self.remotes[name].urls['url'])
+
+        # overwrite urls in checkout
         for remote in self.remotes.values():
             for key, val in remote.urls.items():
                 key = StrFmt.fmt_remote_key(remote.name, key)
@@ -154,6 +161,13 @@ class GitRepo(object):
     def is_checked_out(self):
         if os.path.exists(os.path.join(self.path, '.git')):
             return True
+
+    ### Service methods
+
+    def do_init_repo(self):
+        os.mkdir(self.path)
+        Git.repo_init(self.path)
+        self.set_remotes_in_checkout()
 
     ### Commands
 
@@ -172,3 +186,7 @@ class GitRepo(object):
         else:
             ioutils.action_failed('Failed pulling %s' % self.path)
         return success
+
+    def cmd_fetch(self):
+        if not os.path.exists(self.path):
+            self.do_init_repo()

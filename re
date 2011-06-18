@@ -45,7 +45,8 @@ class Program(object):
 
         if clean:
             for repo in repo_manager.active_repos():
-                repo.cmd_pull()
+                #repo.cmd_pull()
+                repo.cmd_fetch()
 
 
 

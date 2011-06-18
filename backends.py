@@ -8,6 +8,13 @@ log = logging
 
 class Git(object):
     @classmethod
+    def repo_init(cls, path):
+        ret, out, err = ioutils.invoke(path, ['git', 'init'])
+        if ret:
+            log.error("Could not init repo '%s': %s" % \
+                      (path, err))
+
+    @classmethod
     def get_conf_key(cls, path, key):
         ret, val, err = ioutils.invoke(path, ['git', 'config', key])
         if ret:
@@ -26,7 +33,7 @@ class Git(object):
     @classmethod
     def get_remotes(self, path):
         ret, out, err = ioutils.invoke(path, ['git', 'remote'])
-        if ret:
+        if not out:
             val = []
             log.warn("Could not get remotes for '%s': %s" % \
                      (path, err))
@@ -40,6 +47,13 @@ class Git(object):
         if ret:
             log.error("Could not remove remote %s for '%s': %s" % \
                       (name, path, err))
+
+    @classmethod
+    def add_remote(self, path, name, url):
+        ret, out, err = ioutils.invoke(path, ['git', 'remote', 'add', name, url])
+        if ret:
+            log.error("Could not add remote %s=%s for '%s': %s" % \
+                      (name, url, path, err))
 
     @classmethod
     def clone(cls, path, url):
