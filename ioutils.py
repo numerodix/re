@@ -19,8 +19,11 @@ def invoke(cwd, args):
         log.warn("[%s] '%s' returned %s" % (cwd, ' '.join(args), err))
     return ret, out, err
 
-def action_preface(msg):
-    ansicolor.write_out(ansicolor.yellow(' ===> %s\n' % msg))
+def action_preface(msg, minor=False):
+    if minor:
+        ansicolor.write_out(ansicolor.cyan(' ---> %s\n' % msg))
+    else:
+        ansicolor.write_out(ansicolor.yellow(' ===> %s\n' % msg))
 
 def action_succeeded(msg):
     ansicolor.write_out(ansicolor.green('      %s\n' % msg))

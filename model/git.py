@@ -223,6 +223,8 @@ class GitRepo(object):
         for remote in self.remotes.values():
             for tracking in remote.branches_tracking:
                 if not tracking in remote.branches_remote:
+                    ioutils.action_preface('Removing stale remote tracking branch %s'\
+                                           % tracking, minor=True)
                     Git.remove_remote_tracking_branch(self.path, remote.name,
                                                       tracking)
 
