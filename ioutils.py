@@ -17,8 +17,10 @@ def invoke(cwd, args):
         if not err:
             err = ret
         log.warn("[%s] '%s' returned %s" % (cwd, ' '.join(args), err))
-    else:
-        log.debug("Output: %s" % ansicolor.magenta(out))
+    elif out:
+        lines = out.split('\n')
+        for line in lines:
+            log.debug("  %s" % ansicolor.blue(line))
     return ret, out, err
 
 
