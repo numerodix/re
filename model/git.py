@@ -219,6 +219,13 @@ class GitRepo(object):
             for br in r.branches_tracking.items(): print r.name, br
             for br in r.branches_remote.items(): print r.name, br
 
+    def remove_stale_remote_tracking_branches(self):
+        for remote in self.remotes.values():
+            for tracking in remote.branches_tracking:
+                if not tracking in remote.branches_remote:
+                    Git.remove_remote_tracking_branch(self.path, remote.name,
+                                                      tracking)
+
     ### Commands
 
     def cmd_fetch(self):
@@ -242,6 +249,7 @@ class GitRepo(object):
 
         success = True
         self.detect_branches()
+        self.remove_stale_remote_tracking_branches()
 
         if success:
             ioutils.action_succeeded('Finished merging %s' % self.path)

@@ -95,6 +95,14 @@ class Git(object):
         return val
 
     @classmethod
+    def remove_remote_tracking_branch(cls, path, remote, branch):
+        arg = ':refs/heads/%s' % branch
+        ret, out, err = ioutils.invoke(path, ['git', 'push', remote, arg])
+        if ret:
+            log.error("Could not remove remote tracking branch %s/%s for '%s': %s" % \
+                      (remote, branch, path, err))
+
+    @classmethod
     def add_remote(cls, path, name, url):
         ret, out, err = ioutils.invoke(path, ['git', 'remote', 'add', name, url])
         if ret:
