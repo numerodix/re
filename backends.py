@@ -15,6 +15,56 @@ class Git(object):
                       (path, err))
 
     @classmethod
+    def get_checked_out_commit(cls, path):
+        branches = cls.get_branches_local(path)
+        for active, branch in branches:
+            if active:
+                return branch
+
+        ret, out, err = ioutils.invoke(path, ['git', 'log', '-n1'])
+        if ret:
+            log.error("Could not get checkout commit '%s': %s" % \
+                      (path, err))
+        else:
+            m = re.match(r'^commit\s*([a-z0-9]+)', out)
+            if m:
+                val = m.group(1)
+        return val
+
+    @classmethod
+    def repo_is_clean(cls, path):
+        ret, out, err = ioutils.invoke(path, ['git', 'status', '--short'])
+        if ret:
+            log.error("Could not init repo '%s': %s" % \
+                      (path, err))
+        else:
+            if out:
+                lst = out.split('\n')
+                lst = map(lambda s: re.match(r'^\?\?', s) and True or False, lst)
+                if not all(lst):
+                    return False
+        return True
+
+    @classmethod
+    def stash(cls, path, apply=False):
+        args = ['git', 'stash']
+        if apply:
+            args += ['apply']
+        ret, out, err = ioutils.invoke(path, args)
+        if ret:
+            log.error("Could not stash repo '%s': %s" % \
+                      (path, err))
+        return True
+
+    @classmethod
+    def checkout(cls, path, commit):
+        ret, out, err = ioutils.invoke(path, ['git', 'checkout', commit])
+        if ret:
+            log.error("Could not checkout %s for '%s': %s" % \
+                      (commit, path, err))
+        return True
+
+    @classmethod
     def get_conf_key(cls, path, key):
         ret, val, err = ioutils.invoke(path, ['git', 'config', key])
         if ret:

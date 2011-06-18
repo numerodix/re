@@ -269,6 +269,27 @@ class GitRepo(object):
                                minor=True)
                 Git.add_local_tracking_branch(self.path, remote.name, tracking)
 
+    def merge_local_tracking_branches(self):
+        save_commit = Git.get_checked_out_commit(self.path)
+
+        clean, stashed = True, False
+        if not Git.repo_is_clean(self.path):
+            if Git.stash(self.path):
+                ioutils.inform('Repo is dirty, stashed at %s' % save_commit, minor=True)
+                stashed = True
+            else:
+                clean = False
+
+        if clean:
+            for branch in self.branches.values():
+                if Git.checkout(self.path, branch.name):
+                    print Git.get_checked_out_commit(self.path)
+
+        if save_commit:
+            if Git.checkout(self.path, save_commit):
+                if stashed and Git.stash(self.path, apply=True):
+                    ioutils.inform('Restored %s' % save_commit, minor=True)
+
     ### Commands
 
     def cmd_fetch(self):
@@ -292,6 +313,7 @@ class GitRepo(object):
         self.detect_branches()
         self.remove_stale_remote_tracking_branches()
         self.setup_local_tracking_branches()
+        self.merge_local_tracking_branches()
 
         if not success:
             ioutils.complain('Failed merging %s' % self.path)
