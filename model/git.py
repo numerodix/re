@@ -188,5 +188,17 @@ class GitRepo(object):
         return success
 
     def cmd_fetch(self):
+        ioutils.action_preface('Trying to fetch %s' % self.path)
+
         if not os.path.exists(self.path):
             self.do_init_repo()
+
+        success = True
+        for remote in self.remotes.values():
+            success = success and Git.fetch(self.path, remote.name)
+
+        if success:
+            ioutils.action_succeeded('Finished fetching %s' % self.path)
+        else:
+            ioutils.action_failed('Failed fetching %s' % self.path)
+        return success

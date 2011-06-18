@@ -65,6 +65,14 @@ class Git(object):
             return True
 
     @classmethod
+    def fetch(cls, path, name):
+        ret, out, err = ioutils.invoke(path, ['git', 'fetch', name])
+        if ret:
+            log.error("Fetch error for '%s' from %s: %s" % (path, name, err))
+        else:
+            return True
+
+    @classmethod
     def pull(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'pull'])
         if ret:
