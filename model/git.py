@@ -1,3 +1,4 @@
+from backends import Git
 import utils
 
 class Branch(object):
@@ -21,11 +22,11 @@ class Branch(object):
 class Remote(object):
     """
     name            origin
+    is_canonical    True
     urls        [
                     url         git://github.com/numerodix/django-couchdb-utils.git
                     pushurl     git@github.com:numerodix/django-couchdb-utils.git
                 ]
-    is_canonical    True
     branches    [
                     master
                     maint
@@ -40,11 +41,13 @@ class Remote(object):
 
 class GitRepo(object):
     """
-    path            lib/backuptools
-    remotes     [
-                    origin
-                    github
-                ]
+    path                lib/backuptools
+    remotes         [
+                        origin
+                        github
+                    ]
+
+    is_checked_out()    True
     """
 
     vcs_tag = 'git'
@@ -74,11 +77,14 @@ class GitRepo(object):
         return repo
 
     def attributes_to_cfg(self):
+        names = self.remotes.keys()
+        names.sort()
+
         # find canonical remote
         remotes = filter(lambda r: r.is_canonical, self.remotes.values())
-        name = remotes[0].name
-        names = self.remotes.keys()
-        names = utils.sort_with_elem_as_first(name, names)
+        if remotes:
+            name = remotes[0].name
+            names = utils.sort_with_elem_as_first(name, names)
 
         for key in names:
             remote = self.remotes[key]
@@ -90,3 +96,21 @@ class GitRepo(object):
                 val = remote.urls[att]
                 att = '%s.%s' % (remote.name, att)
                 yield att, val
+
+
+    @classmethod
+    def from_checkout(cls, path):
+        repo = GitRepo(path)
+
+        names = Git.get_remotes(path)
+        for name in names:
+            remote = Remote(name)
+            repo.remotes[name] = remote
+
+            for url in ['url', 'pushurl']:
+                key = 'remote.%s.%s' % (name, url)
+                val = Git.get_conf_key(path, key)
+                if val:
+                    remote.urls[url] = val
+
+        return repo

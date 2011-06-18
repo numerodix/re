@@ -24,6 +24,17 @@ class Git(object):
                       (key, value, repo_path, err))
 
     @classmethod
+    def get_remotes(self, repo_path):
+        ret, out, err = ioutils.invoke(repo_path, ['git', 'remote'])
+        if ret:
+            val = []
+            log.warn("Could not get remotes for '%s': %s" % \
+                     (repo_path, err))
+        else:
+            val = out.split('\n')
+        return val
+
+    @classmethod
     def clone(cls, repo_path, url):
         os.mkdir(repo_path)
         ret, out, err = ioutils.invoke(repo_path, ['git', 'clone', url, '.'])
@@ -33,7 +44,7 @@ class Git(object):
             return True
 
     @classmethod
-    def pull(cls, repo_path, url):
+    def pull(cls, repo_path):
         ret, out, err = ioutils.invoke(repo_path, ['git', 'pull'])
         if ret:
             log.error("Pull error for '%s': %s" % (repo_path, err))

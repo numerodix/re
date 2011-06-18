@@ -100,9 +100,9 @@ class RepoManager(object):
                 repotype = dispatch.get(d)
                 if repotype:
                     relpath_stripped = re.sub(r'^\./', '', relpath)
-                    repo = repotype(relpath_stripped)
-                    if list(repo.attributes()):
-                        dct[repo.repo_path] = repo
+                    repo = repotype.from_checkout(relpath_stripped)
+                    if repo.remotes:
+                        dct[repo.path] = repo
 
                 # don't traverse vcs dirs
                 if d in VCS_DIRS:
@@ -128,8 +128,8 @@ class RepoManager(object):
         for k in sorted(dct):
             self.repos[k] = dct[k]
 
-    def _mk_repo_id(self, tag, repo_path):
-        return '%s:%s' % (tag, repo_path)
+    def _mk_repo_id(self, tag, path):
+        return '%s:%s' % (tag, path)
 
     def _split_repo_id(self, repo_id):
         for repo_type in self.repotypes:
@@ -142,18 +142,18 @@ class RepoManager(object):
         repo = repo_type.from_cfg_attributes(path, attributes)
         self.repos[path] = repo
 
-    def activate(self, repo_paths):
-        for repo_path in repo_paths:
-            if repo_path in self.repos:
-                self.repos[repo_path].active = True
+    def activate(self, paths):
+        for path in paths:
+            if path in self.repos:
+                self.repos[path].active = True
 
     def activate_all(self):
         for _, repo in self.repos.items():
             repo.active = True
 
     def items(self):
-        for repo_path, repo in self.repos.items():
-            repo_id = self._mk_repo_id(repo.vcs_tag, repo_path)
+        for path, repo in self.repos.items():
+            repo_id = self._mk_repo_id(repo.vcs_tag, path)
             yield repo_id, repo
 
     def active_repos(self):

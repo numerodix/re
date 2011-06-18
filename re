@@ -27,9 +27,6 @@ class Program(object):
 
     def cmd_pull(self):
         repo_manager = Conf.read_config(REPO_CONFIG)
-        Conf.write_config(repo_manager, filehandle=sys.stdout)
-        #print repo_manager.repos
-        return
 
         local_repos = LocalConf.items(REPO_CONFIG_LOCAL)
         if local_repos:
