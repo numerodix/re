@@ -18,68 +18,6 @@ VCS_DIRS = (
     '.svn',
 )
 
-class Repo(object): pass
-
-class zGitRepo(Repo):
-    tag = 'git'
-    vcs_dir = '.git'
-
-    def __init__(self, repo_path, **attributes):
-        self.repo_path = repo_path
-        self.active = False
-
-        url, pushurl = None, None
-        if attributes:
-            url = attributes.get('url', None)
-            pushurl = attributes.get('pushurl', None)
-        else:
-            url, pushurl = self._get_repo_urls()
-
-        self._atts = collections.OrderedDict()
-        if url:
-            self._atts['url'] = url
-        if pushurl:
-            self._atts['pushurl'] = pushurl
-
-    def _get_repo_urls(self):
-        urls = []
-        for urltype in ['url', 'pushurl']:
-            conf_item = 'remote.origin.%s' % urltype
-            url = Git.get_conf_key(self.repo_path, conf_item)
-            urls.append(url)
-        return urls[0], urls[1]
-
-    def _set_repo_urls(self):
-        for urltype in ['url', 'pushurl']:
-            val = self._atts.get(urltype, None)
-            if val:
-                conf_item = 'remote.origin.%s' % urltype
-                Git.set_conf_key(self.repo_path, conf_item, val)
-
-    def checkout_exists(self):
-        if os.path.exists(os.path.join(self.repo_path, '.git')):
-            return True
-
-    def cmd_pull(self):
-        ioutils.action_preface('Trying to pull %s' % self.repo_path)
-
-        success = None
-        if not os.path.exists(self.repo_path):
-            success = Git.clone(self.repo_path, self._atts['url'])
-        else:
-            self._set_repo_urls()
-            success = Git.pull(self.repo_path, self._atts['url'])
-
-        if success:
-            ioutils.action_succeeded('Finished pulling %s' % self.repo_path)
-        else:
-            ioutils.action_failed('Failed pulling %s' % self.repo_path)
-        return success
-
-    def attributes(self):
-        for att, val in self._atts.items():
-            yield att, val
-
 
 class RepoManager(object):
     repotypes = [GitRepo]
@@ -145,11 +83,11 @@ class RepoManager(object):
     def activate(self, paths):
         for path in paths:
             if path in self.repos:
-                self.repos[path].active = True
+                self.repos[path].is_active = True
 
     def activate_all(self):
         for _, repo in self.repos.items():
-            repo.active = True
+            repo.is_active = True
 
     def items(self):
         for path, repo in self.repos.items():
@@ -158,5 +96,5 @@ class RepoManager(object):
 
     def active_repos(self):
         for _, repo in self.repos.items():
-            if repo.active:
+            if repo.is_active:
                 yield repo

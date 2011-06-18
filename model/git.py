@@ -1,5 +1,26 @@
+import os
+
 from backends import Git
+import ioutils
 import utils
+
+class StrFmt(object):
+    @classmethod
+    def split_cfg_key(cls, key):
+        parts = key.split('.')
+        name, url = None, parts[0]
+        if len(parts) == 2:
+            name, url = parts
+        return name, url
+
+    @classmethod
+    def fmt_cfg_key(cls, name, url):
+        return '%s.%s' % (name, url)
+
+    @classmethod
+    def fmt_remote_key(cls, name, url):
+        return 'remote.%s.%s' % (name, url)
+
 
 class Branch(object):
     """
@@ -42,6 +63,7 @@ class Remote(object):
 class GitRepo(object):
     """
     path                lib/backuptools
+    is_active           False
     remotes         [
                         origin
                         github
@@ -55,16 +77,16 @@ class GitRepo(object):
 
     def __init__(self, path):
         self.path = path
+        self.is_active = False
         self.remotes = {}
+
+    ### To and from cfg
 
     @classmethod
     def from_cfg_attributes(cls, path, attributes):
         repo = GitRepo(path)
         for key, val in attributes.items():
-            parts = key.split('.')
-            name, key = None, parts[0]
-            if len(parts) == 2:
-                name, key = parts
+            name, key = StrFmt.split_cfg_key(key)
 
             remote = Remote(name)
             if not repo.remotes:  # this is the first remote
@@ -94,9 +116,10 @@ class GitRepo(object):
 
             for att in urls:
                 val = remote.urls[att]
-                att = '%s.%s' % (remote.name, att)
+                att = StrFmt.fmt_cfg_key(remote.name, att)
                 yield att, val
 
+    ### To and from checkout
 
     @classmethod
     def from_checkout(cls, path):
@@ -108,9 +131,44 @@ class GitRepo(object):
             repo.remotes[name] = remote
 
             for url in ['url', 'pushurl']:
-                key = 'remote.%s.%s' % (name, url)
+                key = StrFmt.fmt_remote_key(name, url)
                 val = Git.get_conf_key(path, key)
                 if val:
                     remote.urls[url] = val
 
         return repo
+
+    def set_remotes_in_checkout(self):
+        names = Git.get_remotes(self.path)
+        names = filter(lambda n: n not in self.remotes, names)
+        for name in names:
+            Git.remove_remote(self.path, name)
+
+        for remote in self.remotes.values():
+            for key, val in remote.urls.items():
+                key = StrFmt.fmt_remote_key(remote.name, key)
+                Git.set_conf_key(self.path, key, val)
+
+    ### Queries
+
+    def is_checked_out(self):
+        if os.path.exists(os.path.join(self.path, '.git')):
+            return True
+
+    ### Commands
+
+    def cmd_pull(self):
+        ioutils.action_preface('Trying to pull %s' % self.path)
+
+        success = None
+        if not os.path.exists(self.path):
+            success = Git.clone(self.path, self._atts['url'])
+        else:
+            self.set_remotes_in_checkout()
+            success = Git.pull(self.path)
+
+        if success:
+            ioutils.action_succeeded('Finished pulling %s' % self.path)
+        else:
+            ioutils.action_failed('Failed pulling %s' % self.path)
+        return success

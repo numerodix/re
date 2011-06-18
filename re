@@ -27,6 +27,8 @@ class Program(object):
 
     def cmd_pull(self):
         repo_manager = Conf.read_config(REPO_CONFIG)
+        #Conf.write_config(repo_manager, filehandle=sys.stdout)
+        #return
 
         local_repos = LocalConf.items(REPO_CONFIG_LOCAL)
         if local_repos:
@@ -37,8 +39,8 @@ class Program(object):
         # dry run first
         clean = True
         for repo in repo_manager.active_repos():
-            if not repo.checkout_exists() and os.path.exists(repo.repo_path):
-                ioutils.complain("Cannot pull '%s', path exists" % repo.repo_path)
+            if not repo.is_checked_out() and os.path.exists(repo.path):
+                ioutils.complain("Cannot pull '%s', path exists" % repo.path)
                 clean = False
 
         if clean:

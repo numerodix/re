@@ -8,45 +8,52 @@ log = logging
 
 class Git(object):
     @classmethod
-    def get_conf_key(cls, repo_path, key):
-        ret, val, err = ioutils.invoke(repo_path, ['git', 'config', key])
+    def get_conf_key(cls, path, key):
+        ret, val, err = ioutils.invoke(path, ['git', 'config', key])
         if ret:
             val = None
             log.warn("Could not get config key %s for '%s': %s" % \
-                      (key, repo_path, err))
+                      (key, path, err))
         return val
 
     @classmethod
-    def set_conf_key(self, repo_path, key, value):
-        ret, out, err = ioutils.invoke(repo_path, ['git', 'config', key, value])
+    def set_conf_key(self, path, key, value):
+        ret, out, err = ioutils.invoke(path, ['git', 'config', key, value])
         if ret:
             log.error("Could not set config %s=%s for '%s': %s" % \
-                      (key, value, repo_path, err))
+                      (key, value, path, err))
 
     @classmethod
-    def get_remotes(self, repo_path):
-        ret, out, err = ioutils.invoke(repo_path, ['git', 'remote'])
+    def get_remotes(self, path):
+        ret, out, err = ioutils.invoke(path, ['git', 'remote'])
         if ret:
             val = []
             log.warn("Could not get remotes for '%s': %s" % \
-                     (repo_path, err))
+                     (path, err))
         else:
             val = out.split('\n')
         return val
 
     @classmethod
-    def clone(cls, repo_path, url):
-        os.mkdir(repo_path)
-        ret, out, err = ioutils.invoke(repo_path, ['git', 'clone', url, '.'])
+    def remove_remote(self, path, name):
+        ret, out, err = ioutils.invoke(path, ['git', 'remote', 'rm', name])
         if ret:
-            log.error("Clone error for '%s': %s" % (repo_path, err))
+            log.error("Could not remove remote %s for '%s': %s" % \
+                      (name, path, err))
+
+    @classmethod
+    def clone(cls, path, url):
+        os.mkdir(path)
+        ret, out, err = ioutils.invoke(path, ['git', 'clone', url, '.'])
+        if ret:
+            log.error("Clone error for '%s': %s" % (path, err))
         else:
             return True
 
     @classmethod
-    def pull(cls, repo_path):
-        ret, out, err = ioutils.invoke(repo_path, ['git', 'pull'])
+    def pull(cls, path):
+        ret, out, err = ioutils.invoke(path, ['git', 'pull'])
         if ret:
-            log.error("Pull error for '%s': %s" % (repo_path, err))
+            log.error("Pull error for '%s': %s" % (path, err))
         else:
             return True
