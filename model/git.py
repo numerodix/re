@@ -171,22 +171,6 @@ class GitRepo(object):
 
     ### Commands
 
-    def cmd_pull(self):
-        ioutils.action_preface('Trying to pull %s' % self.path)
-
-        success = None
-        if not os.path.exists(self.path):
-            success = Git.clone(self.path, self._atts['url'])
-        else:
-            self.set_remotes_in_checkout()
-            success = Git.pull(self.path)
-
-        if success:
-            ioutils.action_succeeded('Finished pulling %s' % self.path)
-        else:
-            ioutils.action_failed('Failed pulling %s' % self.path)
-        return success
-
     def cmd_fetch(self):
         ioutils.action_preface('Trying to fetch %s' % self.path)
 
