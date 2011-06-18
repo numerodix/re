@@ -6,6 +6,7 @@ import re
 from backends import Git
 from consts import *
 import ioutils
+from model.git import GitRepo
 
 log = logging
 
@@ -19,7 +20,7 @@ VCS_DIRS = (
 
 class Repo(object): pass
 
-class GitRepo(Repo):
+class zGitRepo(Repo):
     tag = 'git'
     vcs_dir = '.git'
 
@@ -132,14 +133,14 @@ class RepoManager(object):
 
     def _split_repo_id(self, repo_id):
         for repo_type in self.repotypes:
-            m = re.search(r'^(%s):(.*)$' % repo_type.tag, repo_id)
+            m = re.search(r'^(%s):(.*)$' % repo_type.vcs_tag, repo_id)
             if m:
                 return repo_type, m.group(2)
 
-    def add_repo(self, repo_id, **attributes):
-        repo_type, repo_path = self._split_repo_id(repo_id)
-        repo = repo_type(repo_path, **attributes)
-        self.repos[repo_path] = repo
+    def add_repo(self, repo_id, attributes):
+        repo_type, path = self._split_repo_id(repo_id)
+        repo = repo_type.from_cfg_attributes(path, attributes)
+        self.repos[path] = repo
 
     def activate(self, repo_paths):
         for repo_path in repo_paths:
@@ -152,7 +153,7 @@ class RepoManager(object):
 
     def items(self):
         for repo_path, repo in self.repos.items():
-            repo_id = self._mk_repo_id(repo.tag, repo_path)
+            repo_id = self._mk_repo_id(repo.vcs_tag, repo_path)
             yield repo_id, repo
 
     def active_repos(self):

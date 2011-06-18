@@ -10,9 +10,9 @@ class Conf(object):
     @classmethod
     def write_config(cls, repo_manager, filepath=None, filehandle=None):
         config = ConfigParser.ConfigParser()
-        for repo_name, repo in repo_manager.items():
+        for repo_name, repo in sorted(repo_manager.items()):
             config.add_section(repo_name)
-            for k, v in repo.attributes():
+            for k, v in repo.attributes_to_cfg():
                 config.set(repo_name, k, v)
                 config.set(repo_name, k, v)
 
@@ -32,7 +32,7 @@ class Conf(object):
             for item in config.items(section):
                 k, v = item
                 dct[k] = v
-            repo_manager.add_repo(section, **dct)
+            repo_manager.add_repo(section, dct)
         return repo_manager
 
 class LocalConf(object):
