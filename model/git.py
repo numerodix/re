@@ -301,6 +301,7 @@ class GitRepo(object):
         success = True
         for remote in self.remotes.values():
             success = success and Git.fetch(self.path, remote.name)
+        self.detect_branches()
 
         if not success:
             ioutils.complain('Failed fetching %s' % self.path)
@@ -310,7 +311,6 @@ class GitRepo(object):
         ioutils.inform('Merging %s' % self.path)
 
         success = True
-        self.detect_branches()
         self.remove_stale_remote_tracking_branches()
         self.setup_local_tracking_branches()
         self.merge_local_tracking_branches()
