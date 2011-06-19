@@ -103,7 +103,7 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'branch'])
         if not out:
             val = []
-            log.warn("Could not get branches for '%s': %s" % \
+            log.warn("Could not get local branches for '%s': %s" % \
                      (path, err))
         else:
             lst = out.split('\n')
@@ -121,7 +121,7 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'branch', '-r'])
         if not out:
             val = []
-            log.warn("Could not get branches for '%s': %s" % \
+            log.warn("Could not get remote tracking branches for '%s': %s" % \
                      (path, err))
         else:
             val = out.split('\n')
@@ -133,7 +133,7 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'ls-remote', remote])
         if not out:
             val = []
-            log.warn("Could not get branches for '%s': %s" % \
+            log.warn("Could not get remote branches for '%s': %s" % \
                      (path, err))
         else:
             lst = out.split('\n')
