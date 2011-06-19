@@ -25,13 +25,15 @@ class Program(object):
         else:
             ioutils.suggest('Run with -u to update %s' % REPO_CONFIG)
 
-    def cmd_pull(self):
+    def cmd_pull(self, local_repos_arg=None):
         repo_manager = Conf.read_config(REPO_CONFIG)
         #Conf.write_config(repo_manager, filehandle=sys.stdout)
         #return
 
         local_repos = LocalConf.items(REPO_CONFIG_LOCAL)
-        if local_repos:
+        if local_repos_arg:
+            repo_manager.activate(local_repos_arg)
+        elif local_repos:
             repo_manager.activate(local_repos)
         else:
             repo_manager.activate_all()
@@ -57,8 +59,8 @@ class Program(object):
 if __name__ == '__main__':
     usage = ['%s [command]' % os.path.basename(sys.argv[0])]
     usage.append('\nCommands:')
-    usage.append('  list [-d 1] [-u]   List repositories')
-    usage.append('  pull               Pull repositories')
+    usage.append('  list [-d 1] [-u]           List repositories')
+    usage.append('  pull [repo1 repo2 ...]     Pull repositories')
     usage = '\n'.join(usage)
     optparser = optparse.OptionParser(usage=usage)
     optparser.add_option('-d', '--depth', action='store', type="int", help='Recurse to depth')
@@ -71,7 +73,7 @@ if __name__ == '__main__':
         sys.exit(2)
 
     try:
-        cmd = args[0]
+        cmd = args.pop(0)
     except IndexError:
         print_help()
 
@@ -85,6 +87,6 @@ if __name__ == '__main__':
     if cmd == 'list':
         program.cmd_list(depth=options.depth, update=options.update)
     elif cmd == 'pull':
-        program.cmd_pull()
+        program.cmd_pull(local_repos_arg=args)
     else:
         print_help()
