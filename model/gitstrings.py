@@ -24,6 +24,10 @@ class StrFmt(object):
         return 'refs/heads/%s' % name
 
     @classmethod
+    def fmt_branch_remote_tracking(cls, remote, branch):
+        return '%s/%s' % (remote, branch)
+
+    @classmethod
     def fmt_branch_remote_pointer(cls, branch):
         return 'branch.%s.remote' % branch
 

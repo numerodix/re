@@ -132,7 +132,9 @@ class BranchLocal(Branch):
 
     def cmd_merge(self, branch):
         if self.cmd_checkout():
-            if Git.merge(self.repo.path, branch.name):
+            remoted = StrFmt.fmt_branch_remote_tracking(branch.remote.name,
+                                                        branch.name)
+            if Git.merge(self.repo.path, remoted):
                 return True
 
     @classmethod
@@ -409,7 +411,10 @@ class GitRepo(object):
 
         for branch in self.branches.values():
             if branch.tracking:
-                branch.cmd_merge(branch.tracking)
+                if not branch.cmd_merge(branch.tracking):
+                    ioutils.complain('Merge failed at %s of %s/%s' %
+                                     (branch.name, branch.tracking.remote.name,
+                                      branch.tracking.name), minor=True)
 
         if stashed:
             if Git.checkout(self.path, save_commit):

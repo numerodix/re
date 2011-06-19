@@ -204,7 +204,7 @@ class Git(object):
     def merge(cls, path, branch):
         ret, out, err = ioutils.invoke(path, ['git', 'merge', branch])
         if ret:
-            log.error("Merge error using branch %s for '%s': %s" % (branch, path, err))
+            log.warn("Merge error using branch %s for '%s': %s" % (branch, path, err))
         else:
             return True
 
