@@ -70,7 +70,7 @@ class Git(object):
             args += ['apply']
         ret, out, err = ioutils.invoke(path, args)
         if ret:
-            log.error("Could not stash repo '%s': %s" % \
+            log.error("Could not stash [apply?] repo '%s': %s" % \
                       (path, err))
         return True
 
