@@ -416,30 +416,6 @@ class GitRepo(object):
                 if Git.stash(self.path, apply=True):
                     ioutils.inform('Restored %s' % save_commit, minor=True)
 
-    def zmerge_local_tracking_branches(self):
-        save_commit = Git.get_checked_out_commit(self.path)
-        print save_commit
-        return
-
-        clean, stashed = True, False
-        if not Git.repo_is_clean(self.path):
-            if Git.stash(self.path):
-                ioutils.inform('Repo is dirty, stashed at %s' % save_commit, minor=True)
-                stashed = True
-            else:
-                clean = False
-
-        if clean:
-            for branch in self.branches.values():
-                if Git.checkout(self.path, branch.name):
-                    log.info('Checked out %s' %
-                             Git.get_checked_out_commit(self.path))
-
-        if save_commit:
-            if Git.checkout(self.path, save_commit):
-                if stashed and Git.stash(self.path, apply=True):
-                    ioutils.inform('Restored %s' % save_commit, minor=True)
-
     ### Commands
 
     def cmd_fetch(self):
