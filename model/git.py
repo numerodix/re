@@ -128,7 +128,7 @@ class BranchLocal(Branch):
                         ioutils.inform('Merged %s on %s' % (longname, self.name),
                                        minor=True)
                         ioutils.output(output)
-                        return True
+                    return True
                 else:
                     Git.reset_hard(self.repo.path, self.name)
 
