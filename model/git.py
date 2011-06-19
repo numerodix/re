@@ -59,8 +59,23 @@ class Branch(object):
     """
 
     @classmethod
+    def all_branches(cls, repo):
+        for branch in repo.branches.values():
+            yield branch
+        for remote in repo.remotes.values():
+            for branch in remote.branches_tracking.values():
+                yield branch
+
+    @classmethod
     def print_branches(cls, repo):
-        def fmt(remote, branch):
+        def fmt(branch):
+            remote = getattr(branch, 'remote', None)
+            if remote:
+                remote = remote.name
+            else:
+                remote = 'local'
+            if not branch.exists:
+                remote = '-%s' % remote
             name = branch.name
             if getattr(branch, 'tracking', None):
                 name = '%-15.15s -> %s/%s' % (branch.name,
@@ -70,11 +85,8 @@ class Branch(object):
             return '%-10.10s   %-40.40s   %s\n' % (remote, name, type)
 
         s = ''
-        for branch in repo.branches.values():
-            s += fmt('local', branch)
-        for remote in repo.remotes.values():
-            for branch in remote.branches_tracking.values():
-                s += fmt(remote.name, branch)
+        for branch in Branch.all_branches(repo):
+            s += fmt(branch)
         s = 'Branches:\n' + s
         return s.strip()
 
@@ -83,8 +95,8 @@ class BranchLocal(Branch):
         self.repo = repo
         self.name = name
         self.is_active = is_active
-        self.exists = True
 
+        self.exists = True
         self.tracking = None
 
     def detect_tracking(self):
@@ -135,6 +147,7 @@ class BranchRemoteTracking(Branch):
         self.longname = longname
         self.name = name
 
+        self.exists = True
         self.tracked_by = None
 
     @classmethod
