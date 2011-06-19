@@ -131,6 +131,13 @@ class BranchLocal(Branch):
     def is_checked_out(self):
         return self.name == Git.get_checked_out_commit(self.repo.path)
 
+    @classmethod
+    def cmd_add_tracking(cls, repo, track_branch):
+        if Git.add_local_tracking_branch(repo.path, track_branch.remote.name,
+                                         track_branch.name):
+            branch = cls.get_branch(repo, track_branch.name)
+            branch.tracking = track_branch
+
     def cmd_remove(self):
         if Git.remove_local_branch(self.repo.path, self.name):
             if self.tracking:
@@ -355,11 +362,12 @@ class GitRepo(object):
         Git.repo_init(self.path)
         self.set_remotes_in_checkout()
 
-    def detect_branches(self, update_tracking=False):
+    def detect_branches(self, only_remote=False, update_tracking=False):
         log.debug('Detecting branches')
 
         BranchRemoteTracking.detect_branches(self)
-        BranchLocal.detect_branches(self)
+        if not only_remote:
+            BranchLocal.detect_branches(self)
         if update_tracking:
             for branch in self.branches.values():
                 branch.detect_tracking()
@@ -378,11 +386,11 @@ class GitRepo(object):
 
     def setup_local_tracking_branches(self):
         remote = Remote.get_canonical_remote(self)
-        for tracking in remote.branches_tracking:
-            if tracking not in self.branches:
-                ioutils.inform('Setting up local tracking branch %s' % tracking,
-                               minor=True)
-                Git.add_local_tracking_branch(self.path, remote.name, tracking)
+        for branch in remote.branches_tracking.values():
+            if not branch.tracked_by:
+                ioutils.inform('Setting up local tracking branch %s' %
+                               branch.name, minor=True)
+                BranchLocal.cmd_add_tracking(self, branch)
 
     def merge_local_tracking_branches(self):
         save_commit = Git.get_checked_out_commit(self.path)
@@ -418,6 +426,7 @@ class GitRepo(object):
         self.detect_branches(update_tracking=True)
         for remote in self.remotes.values():
             success = success and Git.fetch(self.path, remote.name)
+        self.detect_branches(only_remote=True)
 
         if not success:
             ioutils.complain('Failed fetching %s' % self.path)
@@ -435,7 +444,8 @@ class GitRepo(object):
         # Branch post process
         self.check_for_stale_local_tracking_branches()
 
-        #self.setup_local_tracking_branches()
+        self.setup_local_tracking_branches()
+
         #self.merge_local_tracking_branches()
 
         if not success:
