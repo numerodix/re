@@ -393,9 +393,28 @@ class GitRepo(object):
     def merge_local_tracking_branches(self):
         log.debug('Merging local tracking branches')
 
+        save_commit = Git.get_checked_out_commit(self.path)
+
+        # checkout current branch in case repo has just been cloned and workdir
+        # is empty
+        if not Git.repo_is_clean(self.path):
+            if save_commit in self.branches:
+                self.branches[save_commit].cmd_checkout()
+
+        stashed = False
+        if not Git.repo_is_clean(self.path):
+            if Git.stash(self.path):
+                ioutils.inform('Repo is dirty, stashed at %s' % save_commit, minor=True)
+                stashed = True
+
         for branch in self.branches.values():
             if branch.tracking:
                 branch.cmd_merge(branch.tracking)
+
+        if stashed:
+            if Git.checkout(self.path, save_commit):
+                if Git.stash(self.path, apply=True):
+                    ioutils.inform('Restored %s' % save_commit, minor=True)
 
     def zmerge_local_tracking_branches(self):
         save_commit = Git.get_checked_out_commit(self.path)
