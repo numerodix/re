@@ -398,6 +398,7 @@ class GitRepo(object):
             self.do_init_repo()
 
         success = True
+        self.set_remotes_in_checkout()
         self.detect_branches(update_tracking=True)
         for remote in self.remotes.values():
             success = success and Git.fetch(self.path, remote.name)
