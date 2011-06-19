@@ -43,7 +43,6 @@ class Branch(object):
     """
     name            maint
     longname        maint                       (Local)
-    is_active       False
                     remotes/origin/maint        (RemoteTracking)
                     refs/heads/maint            (Remote)
     type            Local | RemoteTracking | Remote
@@ -96,10 +95,9 @@ class Branch(object):
             branch.check_exists()
 
 class BranchLocal(Branch):
-    def __init__(self, repo, name, is_active):
+    def __init__(self, repo, name):
         self.repo = repo
         self.name = name
-        self.is_active = is_active
 
         self.exists = True
         self.tracking = None
@@ -125,10 +123,13 @@ class BranchLocal(Branch):
 
     def check_exists(self):
         found = False
-        for is_active, name in Git.get_branches_local(self.repo.path):
+        for name in Git.get_branches_local(self.repo.path):
             if self.name == name:
                 found = True
         self.exists = found
+
+    def is_checked_out(self):
+        return self.name == Git.get_checked_out_commit(self.repo.path)
 
     def cmd_remove(self):
         if Git.remove_local_branch(self.repo.path, self.name):
@@ -137,9 +138,9 @@ class BranchLocal(Branch):
             del(self.repo.branches[self.name])
 
     @classmethod
-    def get_branch(cls, repo, name, is_active=False):
+    def get_branch(cls, repo, name):
         if name not in repo.branches:
-            branch = BranchLocal(repo, name, is_active)
+            branch = BranchLocal(repo, name)
             repo.branches[name] = branch
         branch = repo.branches[name]
         return branch
@@ -147,9 +148,8 @@ class BranchLocal(Branch):
     @classmethod
     def detect_branches(cls, repo):
         found = []
-        for is_active, name in Git.get_branches_local(repo.path):
+        for name in Git.get_branches_local(repo.path):
             branch = BranchLocal.get_branch(repo, name)
-            branch.is_active = is_active
             branch.exists = True
             found.append(name)
 
@@ -370,10 +370,10 @@ class GitRepo(object):
         log.debug('Checking for stale local tracking branches')
 
         for branch in self.branches.values():
-            if getattr(branch, 'tracking', None):
-                if not branch.tracking.exists:
+            if getattr(branch, 'tracking', None) and not branch.tracking.exists:
+                if not branch.is_checked_out():
                     if ioutils.prompt('Stale local tracking branch %s, remove?' %
-                                      branch.name):
+                                  branch.name):
                         branch.cmd_remove()
 
     def setup_local_tracking_branches(self):

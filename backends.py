@@ -16,7 +16,7 @@ class Git(object):
 
     @classmethod
     def get_checked_out_commit(cls, path):
-        branches = cls.get_branches_local(path)
+        branches = cls._get_branches_local(path)
         for active, branch in branches:
             if active:
                 return branch
@@ -99,7 +99,7 @@ class Git(object):
                       (name, path, err))
 
     @classmethod
-    def get_branches_local(cls, path):
+    def _get_branches_local(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'branch'])
         if not out:
             val = []
@@ -113,8 +113,15 @@ class Git(object):
                 if re.match(r'^[*] .*', br):
                     active = True
                 name = re.sub(r'^[*]?\s*', '', br)
-                val.append( (active, name) )
+                if not re.match(r'^[(].*[)]$', name):
+                    val.append( (active, name) )
         return val
+
+    @classmethod
+    def get_branches_local(cls, path):
+        pairs = cls._get_branches_local(path)
+        lst = map(lambda (active,name): name, pairs)
+        return lst
 
     @classmethod
     def get_branches_remote_tracking(cls, path):
