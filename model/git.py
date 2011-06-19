@@ -94,6 +94,8 @@ class Branch(object):
         for branch in cls.all_branches(repo):
             branch.check_exists()
 
+        log.debug(cls.print_branches(repo))
+
 class BranchLocal(Branch):
     def __init__(self, repo, name):
         self.repo = repo
@@ -439,11 +441,9 @@ class GitRepo(object):
 
         # Check branch heartbeats after fetch
         Branch.check_heartbeat(self)
-        log.debug(Branch.print_branches(self))
 
         # Branch post process
         self.check_for_stale_local_tracking_branches()
-
         self.setup_local_tracking_branches()
 
         #self.merge_local_tracking_branches()
