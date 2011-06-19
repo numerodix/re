@@ -50,11 +50,31 @@ class Branch(object):
     """
 
 class BranchLocal(Branch):
-    def __init__(self, name, is_active):
+    def __init__(self, repo, name, is_active):
+        self.repo = repo
         self.name = name
         self.is_active = is_active
+        self.exists = True
+
+    @classmethod
+    def detect_branches(cls, repo):
+        found = []
+        for is_active, name in Git.get_branches_local(repo.path):
+            if name not in repo.branches:
+                branch = BranchLocal(repo, name, is_active)
+                repo.branches[name] = branch
+            repo.branches[name].is_active = is_active
+            repo.branches[name].exists = is_active
+            found.append(name)
+
+        for name in repo.branches:
+            if not name in found:
+                repo.branches[name].exists = False
+
 class BranchRemoteTracking(Branch):
-    def __init__(self, remote, longname, name):
+    def __init__(self, repo, remote, longname, name):
+        self.repo = repo
+        self.name = name
         self.remote = remote
         self.longname = longname
         self.name = name
@@ -213,17 +233,17 @@ class GitRepo(object):
         return remote
 
     def detect_branches(self):
-        for is_active, name in Git.get_branches_local(self.path):
-            branch = BranchLocal(name, is_active)
-            self.branches[name] = branch
-
         for longname in Git.get_branches_remote_tracking(self.path):
             if 'HEAD' in longname:  # special case
                 continue
             remote, name = StrFmt.split_branch_longname(longname)
             remote = self.remotes[remote]
-            branch = BranchRemoteTracking(remote, longname, name)
+            branch = BranchRemoteTracking(self, remote, longname, name)
             remote.branches_tracking[name] = branch
+
+        for is_active, name in Git.get_branches_local(self.path):
+            branch = BranchLocal(self, name, is_active)
+            self.branches[name] = branch
 
         #for remote in self.remotes.values():
         #    for longname in Git.get_branches_remote(self.path, remote.name):
