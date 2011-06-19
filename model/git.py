@@ -442,8 +442,6 @@ class GitRepo(object):
     def cmd_merge(self):
         ioutils.inform('Merging %s' % self.path)
 
-        success = True
-
         # Check branch heartbeats after fetch
         Branch.check_heartbeat(self)
 
@@ -453,6 +451,3 @@ class GitRepo(object):
 
         # Merge locals
         self.merge_local_tracking_branches()
-
-        if not success:
-            ioutils.complain('Failed merging %s' % self.path)
