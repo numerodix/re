@@ -428,9 +428,11 @@ class GitRepo(object):
 
         success = True
 
-        # Check for stale local tracking branches
+        # Check branch heartbeats after fetch
         Branch.check_heartbeat(self)
         log.debug(Branch.print_branches(self))
+
+        # Branch post process
         self.check_for_stale_local_tracking_branches()
 
         #self.setup_local_tracking_branches()
