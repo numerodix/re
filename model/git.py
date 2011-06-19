@@ -109,7 +109,6 @@ class BranchLocal(Branch):
             del(self.repo.branches[self.name])
 
     def cmd_checkout(self):
-        # XXX check for repo in clean state
         if Git.checkout(self.repo.path, self.name):
             return True
 
