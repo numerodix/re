@@ -13,14 +13,14 @@ def invoke(cwd, args):
     out = str(out).strip()
     err = str(err).strip()
     ret = popen.returncode
+    if out:
+        lines = out.split('\n')
+        for line in lines:
+            log.debug("> %s" % ansicolor.blue(line))
     if ret:
         if not err:
             err = ret
-        log.warn("[%s] '%s' returned %s" % (cwd, ' '.join(args), err))
-    elif out:
-        lines = out.split('\n')
-        for line in lines:
-            log.debug("| %s" % ansicolor.blue(line))
+        log.warn("Returned %s" % (err))
     return ret, out, err
 
 

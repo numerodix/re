@@ -178,7 +178,7 @@ class Git(object):
 
     @classmethod
     def fetch(cls, path, name):
-        ret, out, err = ioutils.invoke(path, ['git', 'fetch', name])
+        ret, out, err = ioutils.invoke(path, ['git', 'fetch', '--prune', name])
         if ret:
             log.error("Fetch error for '%s' from %s: %s" % (path, name, err))
         else:

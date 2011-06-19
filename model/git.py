@@ -225,13 +225,13 @@ class GitRepo(object):
             branch = BranchRemoteTracking(remote, longname, name)
             remote.branches_tracking[name] = branch
 
-        for remote in self.remotes.values():
-            for longname in Git.get_branches_remote(self.path, remote.name):
-                if 'HEAD' in longname:  # special case
-                    continue
-                _, _, name = StrFmt.split_branch_longname(longname)
-                branch = BranchRemote(remote, longname, name)
-                remote.branches_remote[name] = branch
+        #for remote in self.remotes.values():
+        #    for longname in Git.get_branches_remote(self.path, remote.name):
+        #        if 'HEAD' in longname:  # special case
+        #            continue
+        #        _, _, name = StrFmt.split_branch_longname(longname)
+        #        branch = BranchRemote(remote, longname, name)
+        #        remote.branches_remote[name] = branch
 
         log.debug(self.print_branches())
 
@@ -253,6 +253,7 @@ class GitRepo(object):
         return s.strip()
 
     def remove_stale_remote_tracking_branches(self):
+        """Redundant if fetching with --prune"""
         for remote in self.remotes.values():
             for tracking in remote.branches_tracking:
                 if not tracking in remote.branches_remote:
@@ -301,7 +302,6 @@ class GitRepo(object):
         success = True
         for remote in self.remotes.values():
             success = success and Git.fetch(self.path, remote.name)
-        self.detect_branches()
 
         if not success:
             ioutils.complain('Failed fetching %s' % self.path)
@@ -311,7 +311,7 @@ class GitRepo(object):
         ioutils.inform('Merging %s' % self.path)
 
         success = True
-        self.remove_stale_remote_tracking_branches()
+        self.detect_branches()
         self.setup_local_tracking_branches()
         self.merge_local_tracking_branches()
 
