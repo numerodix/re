@@ -90,6 +90,11 @@ class Branch(object):
         s = 'Branches:\n' + s
         return s.strip()
 
+    @classmethod
+    def check_heartbeat(cls, repo):
+        for branch in cls.all_branches(repo):
+            branch.check_exists()
+
 class BranchLocal(Branch):
     def __init__(self, repo, name, is_active):
         self.repo = repo
@@ -117,6 +122,13 @@ class BranchLocal(Branch):
 
             log.info('Detected local tracking branch %s on %s/%s' %
                       (self.name, rem_name, br_name))
+
+    def check_exists(self):
+        found = False
+        for is_active, name in Git.get_branches_local(self.repo.path):
+            if self.name == name:
+                found = True
+        self.exists = found
 
     @classmethod
     def get_branch(cls, repo, name, is_active=False):
@@ -149,6 +161,13 @@ class BranchRemoteTracking(Branch):
 
         self.exists = True
         self.tracked_by = None
+
+    def check_exists(self):
+        found = False
+        for longname in Git.get_branches_remote_tracking(self.repo.path):
+            if self.longname == longname:
+                found = True
+        self.exists = found
 
     @classmethod
     def get_branch(cls, repo, remote, longname, name):
@@ -296,6 +315,8 @@ class GitRepo(object):
         return repo
 
     def set_remotes_in_checkout(self):
+        log.debug('Setting remotes in checkout')
+
         # remove remotes not in model
         remotes_names = Git.get_remotes(self.path)
         names = filter(lambda n: n not in self.remotes, remotes_names)
@@ -322,6 +343,8 @@ class GitRepo(object):
     ### Service methods
 
     def do_init_repo(self):
+        log.debug('Initializing repo')
+
         os.mkdir(self.path)
         Git.repo_init(self.path)
         self.set_remotes_in_checkout()
@@ -388,7 +411,9 @@ class GitRepo(object):
         ioutils.inform('Merging %s' % self.path)
 
         success = True
-        self.setup_local_tracking_branches()
+        Branch.check_heartbeat(self)
+        log.debug(Branch.print_branches(self))
+        #self.setup_local_tracking_branches()
         #self.merge_local_tracking_branches()
 
         if not success:
