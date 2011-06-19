@@ -335,16 +335,6 @@ class GitRepo(object):
 
         log.debug(Branch.print_branches(self))
 
-    def remove_stale_remote_tracking_branches(self):
-        """Redundant if fetching with --prune"""
-        for remote in self.remotes.values():
-            for tracking in remote.branches_tracking:
-                if not tracking in remote.branches_remote:
-                    ioutils.inform(\
-                       'Removing stale remote tracking branch %s' % tracking, minor=True)
-                    Git.remove_remote_tracking_branch(self.path, remote.name,
-                                                      tracking)
-
     def setup_local_tracking_branches(self):
         remote = Remote.get_canonical_remote(self)
         for tracking in remote.branches_tracking:
