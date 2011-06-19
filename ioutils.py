@@ -30,8 +30,11 @@ def inform(msg, minor=False):
     else:
         ansicolor.write_out(ansicolor.green('> %s\n' % msg))
 
-def suggest(msg):
-    ansicolor.write_out(ansicolor.magenta('> %s\n' % msg))
+def suggest(msg, minor=False):
+    if minor:
+        ansicolor.write_out(ansicolor.magenta('-> %s\n' % msg))
+    else:
+        ansicolor.write_out(ansicolor.magenta('> %s\n' % msg))
 
 def complain(msg, minor=False):
     if minor:

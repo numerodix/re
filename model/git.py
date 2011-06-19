@@ -131,11 +131,17 @@ class BranchLocal(Branch):
             return True
 
     def cmd_merge(self, branch):
-        if self.cmd_checkout():
-            remoted = StrFmt.fmt_branch_remote_tracking(branch.remote.name,
-                                                        branch.name)
-            if Git.merge(self.repo.path, remoted):
-                return True
+        name = StrFmt.fmt_branch_remote_tracking(branch.remote.name, branch.name)
+        if Git.commit_is_ahead_of(self.repo.path, self.name, name):
+            ioutils.suggest('Branch %s is ahead of %s, is pushable' %
+                            (self.name, name), minor=True)
+            return True
+        else:
+            if self.cmd_checkout():
+                remoted = StrFmt.fmt_branch_remote_tracking(branch.remote.name,
+                                                            branch.name)
+                if Git.merge(self.repo.path, remoted):
+                    return True
 
     @classmethod
     def get_branch(cls, repo, name):
@@ -418,10 +424,9 @@ class GitRepo(object):
                                      (branch.name, branch.tracking.remote.name,
                                       branch.tracking.name), minor=True)
 
-        if stashed:
-            if Git.checkout(self.path, save_commit):
-                if Git.stash(self.path, apply=True):
-                    ioutils.inform('Restored %s' % save_commit, minor=True)
+        if Git.checkout(self.path, save_commit):
+            if stashed and Git.stash(self.path, apply=True):
+                ioutils.inform('Restored %s' % save_commit, minor=True)
 
     ### Commands
 

@@ -46,6 +46,16 @@ class Git(object):
         return True
 
     @classmethod
+    def commit_is_ahead_of(cls, path, first, second):
+        ret, out, err = ioutils.invoke(path, ['git', 'log', '-n1', first,
+                                              '^'+second])
+        if ret:
+            log.error("Could not compare branches %s and %s for '%s': %s" % \
+                      (first, second, path, err))
+        if out:
+            return True
+
+    @classmethod
     def stash(cls, path, apply=False):
         args = ['git', 'stash']
         if apply:
