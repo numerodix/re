@@ -130,6 +130,12 @@ class BranchLocal(Branch):
                 found = True
         self.exists = found
 
+    def cmd_remove(self):
+        if Git.remove_local_branch(self.repo.path, self.name):
+            if self.tracking:
+                self.tracking.tracked_by = None
+            del(self.repo.branches[self.name])
+
     @classmethod
     def get_branch(cls, repo, name, is_active=False):
         if name not in repo.branches:
@@ -360,6 +366,16 @@ class GitRepo(object):
 
         log.debug(Branch.print_branches(self))
 
+    def check_for_stale_local_tracking_branches(self):
+        log.debug('Checking for stale local tracking branches')
+
+        for branch in self.branches.values():
+            if getattr(branch, 'tracking', None):
+                if not branch.tracking.exists:
+                    if ioutils.prompt('Stale local tracking branch %s, remove?' %
+                                      branch.name):
+                        branch.cmd_remove()
+
     def setup_local_tracking_branches(self):
         remote = Remote.get_canonical_remote(self)
         for tracking in remote.branches_tracking:
@@ -411,8 +427,12 @@ class GitRepo(object):
         ioutils.inform('Merging %s' % self.path)
 
         success = True
+
+        # Check for stale local tracking branches
         Branch.check_heartbeat(self)
         log.debug(Branch.print_branches(self))
+        self.check_for_stale_local_tracking_branches()
+
         #self.setup_local_tracking_branches()
         #self.merge_local_tracking_branches()
 

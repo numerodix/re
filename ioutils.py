@@ -36,6 +36,15 @@ def suggest(msg):
 def complain(msg):
     ansicolor.write_out(ansicolor.yellow('> %s\n' % msg))
 
+def prompt(msg, default_yes=True):
+    if default_yes:
+        prompt = '[Yn] '
+    ansicolor.write_out(ansicolor.magenta('> %s %s' % (msg, prompt)))
+    inp = raw_input()
+    if default_yes:
+        return False if 'n' in inp else True
+    else:
+        return True if 'y' in inp else False
 
 def output(msg):
     ansicolor.write_out('%s\n' % msg)

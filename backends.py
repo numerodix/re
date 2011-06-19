@@ -145,6 +145,13 @@ class Git(object):
         return val
 
     @classmethod
+    def remove_local_branch(cls, path, branch):
+        ret, out, err = ioutils.invoke(path, ['git', 'branch', '-D', branch])
+        if ret:
+            log.error("Could not remove local branch %s for '%s': %s" % \
+                      (branch, path, err))
+
+    @classmethod
     def remove_remote_tracking_branch(cls, path, remote, branch):
         arg = ':refs/heads/%s' % branch
         ret, out, err = ioutils.invoke(path, ['git', 'push', remote, arg])
