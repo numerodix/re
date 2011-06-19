@@ -30,6 +30,10 @@ class StrFmt(object):
         return name.split('/')
 
     @classmethod
+    def fmt_branch_longname(cls, name):
+        return 'refs/heads/%s' % name
+
+    @classmethod
     def fmt_branch_remote_pointer(cls, branch):
         return 'branch.%s.remote' % branch
 
@@ -139,6 +143,14 @@ class BranchLocal(Branch):
                                          track_branch.name):
             branch = cls.get_branch(repo, track_branch.name)
             branch.tracking = track_branch
+
+    def cmd_set_tracking(self, track_branch):
+        remote_pointer = StrFmt.fmt_branch_remote_pointer(track_branch.name)
+        merge_pointer = StrFmt.fmt_branch_merge_pointer(track_branch.name)
+        rem_name = Git.set_conf_key(self.repo.path, remote_pointer,
+                                    track_branch.remote.name)
+        longname = Git.set_conf_key(self.repo.path, merge_pointer,
+                                    StrFmt.fmt_branch_longname(track_branch.name))
 
     def cmd_remove(self):
         if Git.remove_local_branch(self.repo.path, self.name):
@@ -390,9 +402,16 @@ class GitRepo(object):
         remote = Remote.get_canonical_remote(self)
         for branch in remote.branches_tracking.values():
             if not branch.tracked_by:
-                ioutils.inform('Setting up local tracking branch %s' %
-                               branch.name, minor=True)
-                BranchLocal.cmd_add_tracking(self, branch)
+                local_branch = self.branches.get(branch.name, None)
+                if local_branch:
+                    ioutils.inform('Setting local branch %s to track %s/%s' %
+                                   (branch.name, branch.remote.name,
+                                    branch.name), minor=True)
+                    local_branch.cmd_set_tracking(branch)
+                else:
+                    ioutils.inform('Setting up local tracking branch %s' %
+                                   branch.name, minor=True)
+                    BranchLocal.cmd_add_tracking(self, branch)
 
     def merge_local_tracking_branches(self):
         save_commit = Git.get_checked_out_commit(self.path)
