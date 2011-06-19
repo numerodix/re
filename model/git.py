@@ -327,6 +327,8 @@ class GitRepo(object):
         self.set_remotes_in_checkout()
 
     def detect_branches(self, update_tracking=False):
+        log.debug('Detecting branches')
+
         BranchRemoteTracking.detect_branches(self)
         BranchLocal.detect_branches(self)
         if update_tracking:
