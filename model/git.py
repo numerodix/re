@@ -125,6 +125,16 @@ class BranchLocal(Branch):
                 self.tracking.tracked_by = None
             del(self.repo.branches[self.name])
 
+    def cmd_checkout(self):
+        # XXX check for repo in clean state
+        if Git.checkout(self.repo.path, self.name):
+            return True
+
+    def cmd_merge(self, branch):
+        if self.cmd_checkout():
+            if Git.merge(self.repo.path, branch.name):
+                return True
+
     @classmethod
     def get_branch(cls, repo, name):
         if name not in repo.branches:
@@ -381,7 +391,16 @@ class GitRepo(object):
                     BranchLocal.cmd_add_tracking(self, branch)
 
     def merge_local_tracking_branches(self):
+        log.debug('Merging local tracking branches')
+
+        for branch in self.branches.values():
+            if branch.tracking:
+                branch.cmd_merge(branch.tracking)
+
+    def zmerge_local_tracking_branches(self):
         save_commit = Git.get_checked_out_commit(self.path)
+        print save_commit
+        return
 
         clean, stashed = True, False
         if not Git.repo_is_clean(self.path):
@@ -432,7 +451,8 @@ class GitRepo(object):
         self.check_for_stale_local_tracking_branches()
         self.setup_local_tracking_branches()
 
-        #self.merge_local_tracking_branches()
+        # Merge locals
+        self.merge_local_tracking_branches()
 
         if not success:
             ioutils.complain('Failed merging %s' % self.path)

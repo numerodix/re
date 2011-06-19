@@ -173,6 +173,8 @@ class Git(object):
         if ret:
             log.error("Could not add local tracking branch %s for '%s': %s" % \
                       (branch, path, err))
+        else:
+            return True
 
     @classmethod
     def add_remote(cls, path, name, url):
@@ -195,6 +197,14 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'fetch', '--prune', name])
         if ret:
             log.error("Fetch error for '%s' from %s: %s" % (path, name, err))
+        else:
+            return True
+
+    @classmethod
+    def merge(cls, path, branch):
+        ret, out, err = ioutils.invoke(path, ['git', 'merge', branch])
+        if ret:
+            log.error("Merge error using branch %s for '%s': %s" % (branch, path, err))
         else:
             return True
 
