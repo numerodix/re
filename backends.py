@@ -227,6 +227,12 @@ class Git(object):
             return True
 
     @classmethod
+    def reset_hard(cls, path, branch):
+        ret, out, err = ioutils.invoke(path, ['git', 'checkout', '-f', branch])
+        if ret:
+            log.warn("Hard reset failed on branch %s for '%s': %s" % (branch, path, err))
+
+    @classmethod
     def pull(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'pull'])
         if ret:

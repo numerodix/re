@@ -142,6 +142,8 @@ class BranchLocal(Branch):
                                                             branch.name)
                 if Git.merge(self.repo.path, remoted):
                     return True
+                else:
+                    Git.reset_hard(self.repo.path, self.name)
 
     @classmethod
     def get_branch(cls, repo, name):
