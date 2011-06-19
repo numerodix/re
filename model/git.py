@@ -11,23 +11,6 @@ log = logging
 
 
 class Branch(object):
-    """
-    name            maint
-    longname        maint                       (Local)
-                    remotes/origin/maint        (RemoteTracking)
-                    refs/heads/maint            (Remote)
-    type            Local | RemoteTracking | Remote
-    is_tracking     (only for Local)
-    remote          (only for RemoteTracking, Remote)
-
-    is_behind(other)   : bool
-    is_ahead_of(other) : bool
-    track(other)
-
-
-    query remote branches: git ls-remote origin
-    """
-
     @classmethod
     def all_branches(cls, repo):
         for branch in repo.branches.values():
@@ -203,19 +186,6 @@ class BranchRemoteTracking(Branch):
 class BranchRemote(Branch): pass
 
 class Remote(object):
-    """
-    name            origin
-    is_canonical    True
-    urls        [
-                    url         git://github.com/numerodix/django-couchdb-utils.git
-                    pushurl     git@github.com:numerodix/django-couchdb-utils.git
-                ]
-    branches    [
-                    master
-                    maint
-                ]
-    """
-
     def __init__(self, name=None):
         self.name = name and name or CANONICAL_REMOTE
         self.is_canonical = False
@@ -250,17 +220,6 @@ class Remote(object):
 
 
 class GitRepo(object):
-    """
-    path                lib/backuptools
-    is_active           False
-    remotes         [
-                        origin
-                        github
-                    ]
-
-    is_checked_out()    True
-    """
-
     vcs_tag = 'git'
     vcs_dir = '.git'
 
