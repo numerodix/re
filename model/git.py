@@ -58,6 +58,26 @@ class Branch(object):
     query remote branches: git ls-remote origin
     """
 
+    @classmethod
+    def print_branches(cls, repo):
+        def fmt(remote, branch):
+            name = branch.name
+            if getattr(branch, 'tracking', None):
+                name = '%-15.15s -> %s/%s' % (branch.name,
+                                              branch.tracking.remote.name,
+                                              branch.tracking.name)
+            type = branch.__class__.__name__
+            return '%-10.10s   %-40.40s   %s\n' % (remote, name, type)
+
+        s = ''
+        for branch in repo.branches.values():
+            s += fmt('local', branch)
+        for remote in repo.remotes.values():
+            for branch in remote.branches_tracking.values():
+                s += fmt(remote.name, branch)
+        s = 'Branches:\n' + s
+        return s.strip()
+
 class BranchLocal(Branch):
     def __init__(self, repo, name, is_active):
         self.repo = repo
@@ -163,6 +183,23 @@ class Remote(object):
             remote = Remote(name)
             repo.remotes[name] = remote
         remote = repo.remotes[name]
+        return remote
+
+    @classmethod
+    def get_canonical_remote(cls, repo):
+        remote = None
+        for r in repo.remotes.values():
+            if r.is_canonical:
+                remote = r
+
+        if not remote:
+            remotes = filter(lambda r: r.name == CANONICAL_REMOTE, repo.remotes.keys())
+            if remotes:
+                remote = repo.remotes[remotes[0]]
+
+        if not remote:
+            remote = repo.remotes[repo.remotes.keys()[0]]
+
         return remote
 
 
@@ -276,48 +313,14 @@ class GitRepo(object):
         Git.repo_init(self.path)
         self.set_remotes_in_checkout()
 
-    def get_canonical_remote(self):
-        remote = None
-        for r in self.remotes.values():
-            if r.is_canonical:
-                remote = r
-
-        if not remote:
-            remotes = filter(lambda r: r.name == CANONICAL_REMOTE, self.remotes.keys())
-            if remotes:
-                remote = self.remotes[remotes[0]]
-
-        if not remote:
-            remote = self.remotes[self.remotes.keys()[0]]
-
-        return remote
-
-    def detect_branches(self):
+    def detect_branches(self, update_tracking=False):
         BranchRemoteTracking.detect_branches(self)
         BranchLocal.detect_branches(self)
-        for branch in self.branches.values():
-            branch.detect_tracking()
+        if update_tracking:
+            for branch in self.branches.values():
+                branch.detect_tracking()
 
-        log.debug(self.print_branches())
-
-    def print_branches(self):
-        def fmt(remote, branch):
-            name = branch.name
-            if getattr(branch, 'tracking', None):
-                name = '%-15.15s -> %s/%s' % (branch.name,
-                                              branch.tracking.remote.name,
-                                              branch.tracking.name)
-            type = branch.__class__.__name__
-            return '%-10.10s   %-40.40s   %s\n' % (remote, name, type)
-
-        s = ''
-        for branch in self.branches.values():
-            s += fmt('local', branch)
-        for remote in self.remotes.values():
-            for branch in remote.branches_tracking.values():
-                s += fmt(remote.name, branch)
-        s = 'Branches:\n' + s
-        return s.strip()
+        log.debug(Branch.print_branches(self))
 
     def remove_stale_remote_tracking_branches(self):
         """Redundant if fetching with --prune"""
@@ -330,7 +333,7 @@ class GitRepo(object):
                                                       tracking)
 
     def setup_local_tracking_branches(self):
-        remote = self.get_canonical_remote()
+        remote = Remote.get_canonical_remote(self)
         for tracking in remote.branches_tracking:
             if tracking not in self.branches:
                 ioutils.inform('Setting up local tracking branch %s' % tracking,
@@ -368,7 +371,7 @@ class GitRepo(object):
             self.do_init_repo()
 
         success = True
-        self.detect_branches()
+        self.detect_branches(update_tracking=True)
         for remote in self.remotes.values():
             success = success and Git.fetch(self.path, remote.name)
 
@@ -381,7 +384,7 @@ class GitRepo(object):
 
         success = True
         self.setup_local_tracking_branches()
-        self.merge_local_tracking_branches()
+        #self.merge_local_tracking_branches()
 
         if not success:
             ioutils.complain('Failed merging %s' % self.path)
