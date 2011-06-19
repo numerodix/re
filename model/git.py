@@ -114,16 +114,19 @@ class BranchLocal(Branch):
             return True
 
     def cmd_merge(self, branch):
-        name = StrFmt.fmt_branch_remote_tracking(branch.remote.name, branch.name)
-        if Git.commit_is_ahead_of(self.repo.path, self.name, name):
+        longname = StrFmt.fmt_branch_remote_tracking(branch.remote.name, branch.name)
+        if Git.commit_is_ahead_of(self.repo.path, self.name, longname):
             ioutils.suggest('Branch %s is ahead of %s, is pushable' %
-                            (self.name, name), minor=True)
+                            (self.name, longname), minor=True)
             return True
         else:
             if self.cmd_checkout():
                 remoted = StrFmt.fmt_branch_remote_tracking(branch.remote.name,
                                                             branch.name)
-                if Git.merge(self.repo.path, remoted):
+                merge_ok, output = Git.merge(self.repo.path, remoted)
+                if merge_ok:
+                    ioutils.inform('Merged %s on %s' % (longname, self.name), minor=True)
+                    ioutils.output(output)
                     return True
                 else:
                     Git.reset_hard(self.repo.path, self.name)

@@ -224,7 +224,7 @@ class Git(object):
         if ret:
             log.warn("Merge error using branch %s for '%s': %s" % (branch, path, err))
         else:
-            return True
+            return True, out
 
     @classmethod
     def reset_hard(cls, path, branch):
