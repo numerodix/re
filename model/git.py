@@ -123,7 +123,7 @@ class BranchLocal(Branch):
                 remoted = StrFmt.fmt_branch_remote_tracking(branch.remote.name,
                                                             branch.name)
                 merge_ok, output = Git.merge(self.repo.path, remoted)
-                if merge_ok:
+                if merge_ok and output:
                     ioutils.inform('Merged %s on %s' % (longname, self.name), minor=True)
                     ioutils.output(output)
                     return True

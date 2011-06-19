@@ -224,6 +224,8 @@ class Git(object):
         if ret:
             log.warn("Merge error using branch %s for '%s': %s" % (branch, path, err))
         else:
+            if out == 'Already up-to-date.':
+                out = ''
             return True, out
 
     @classmethod
