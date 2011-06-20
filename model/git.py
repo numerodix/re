@@ -391,7 +391,7 @@ class GitRepo(object):
 
         if Git.checkout(self.path, save_commit):
             if stashed and Git.stash(self.path, apply=True):
-                ioutils.inform('Restored %s' % save_commit, minor=True)
+                ioutils.inform('Restored stash at %s' % save_commit, minor=True)
 
     ### Commands
 
