@@ -1,6 +1,7 @@
 import ConfigParser
 import collections
 import os
+import re
 import string
 import sys
 
@@ -9,30 +10,38 @@ from model import RepoManager
 class Conf(object):
     @classmethod
     def write_config(cls, repo_manager, filepath=None, filehandle=None):
-        config = ConfigParser.ConfigParser()
+        ss = []
         for repo_name, repo in sorted(repo_manager.items()):
-            config.add_section(repo_name)
+            ss.append('[%s]' % repo_name)
             for k, v in repo.attributes_to_cfg():
-                config.set(repo_name, k, v)
-                config.set(repo_name, k, v)
+                ss.append('    %s = %s' % (k, v))
 
+        s = '\n'.join(ss) + '\n'
         if filehandle:
-            config.write(filehandle)
+            filehandle.write(s)
         else:
             with open(filepath, 'wb') as fp:
-                config.write(fp)
+                fp.write(s)
 
     @classmethod
     def read_config(cls, filepath):
-        config = ConfigParser.ConfigParser()
-        config.readfp(open(filepath))
+        lines = open(filepath).readlines()
         repo_manager = RepoManager()
-        for section in config.sections():
-            dct = collections.OrderedDict()
-            for item in config.items(section):
-                k, v = item
-                dct[k] = v
-            repo_manager.add_repo(section, dct)
+
+        dct = collections.OrderedDict()
+        cur_section = None
+        for line in lines:
+            if line.startswith('['):
+                section = re.findall(r'^[[](.*?)[]]$', line)[0]
+                cur_section = section.strip()
+            elif line.startswith(' '):
+                key, val = re.findall(r'^[ ]{4}([^ ]+)\s*=\s*([^ ]+)$', line)[0]
+                if not cur_section in dct:
+                    dct[cur_section] = collections.OrderedDict()
+                dct[cur_section][key.strip()] = val.strip()
+
+        for section, d in dct.items():
+            repo_manager.add_repo(section, d)
         return repo_manager
 
 class LocalConf(object):

@@ -66,14 +66,14 @@ class RepoManager(object):
         for k in sorted(dct):
             self.repos[k] = dct[k]
 
-    def _mk_repo_id(self, tag, path):
-        return '%s:%s' % (tag, path)
+    def _mk_repo_id(self, vcstag, path):
+        return '%s:%s' % (path, vcstag)
 
     def _split_repo_id(self, repo_id):
         for repo_type in self.repotypes:
-            m = re.search(r'^(%s):(.*)$' % repo_type.vcs_tag, repo_id)
+            m = re.search(r'^(.*):(%s)$' % repo_type.vcs_tag, repo_id)
             if m:
-                return repo_type, m.group(2)
+                return repo_type, m.group(1)
 
     def add_repo(self, repo_id, attributes):
         repo_type, path = self._split_repo_id(repo_id)
