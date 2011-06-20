@@ -1,4 +1,3 @@
-import ConfigParser
 import collections
 import os
 import re
