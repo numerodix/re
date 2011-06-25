@@ -190,17 +190,21 @@ class BranchRemoteTracking(Branch):
 class BranchRemote(Branch): pass
 
 class Remote(object):
-    def __init__(self, name=None):
+    def __init__(self, repo, name=None):
+        self.repo = repo
         self.name = name and name or CANONICAL_REMOTE
         self.is_canonical = False
         self.urls = {}
         self.branches_tracking = {}
         self.branches_remote = {}
 
+    def cmd_fetch(self):
+        return Git.fetch(self.repo.path, self.name)
+
     @classmethod
     def get_remote(cls, repo, name):
         if name not in repo.remotes:
-            remote = Remote(name)
+            remote = Remote(repo, name)
             repo.remotes[name] = remote
         remote = repo.remotes[name]
         return remote
@@ -241,7 +245,7 @@ class GitRepo(object):
         for key, val in attributes.items():
             name, key = StrFmt.split_cfg_key(key)
 
-            remote = Remote(name)
+            remote = Remote(repo, name)
             if not repo.remotes:  # this is the first remote
                 remote.is_canonical = True 
             if not remote.name in repo.remotes:
@@ -280,7 +284,7 @@ class GitRepo(object):
 
         names = Git.get_remotes(path)
         for name in names:
-            remote = Remote(name)
+            remote = Remote(repo, name)
             repo.remotes[name] = remote
 
             for url in ['url', 'pushurl']:
@@ -405,7 +409,7 @@ class GitRepo(object):
         self.set_remotes_in_checkout()
         self.detect_branches(update_tracking=True)
         for remote in self.remotes.values():
-            success = success and Git.fetch(self.path, remote.name)
+            success = success and remote.cmd_fetch()
         self.detect_branches(only_remote=True)
 
         if not success:
