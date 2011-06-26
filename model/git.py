@@ -402,9 +402,9 @@ class GitRepo(object):
     def cmd_compact(self, check=True):
         ioutils.inform('Checking for compactness: %s' % self.path)
 
-        def do_check():
+        def do_check(output_always=False):
             is_compact, output = Git.check_compactness_local(self.path)
-            if not is_compact:
+            if not is_compact or output_always:
                 ioutils.output(output)
             return is_compact
 
@@ -412,7 +412,7 @@ class GitRepo(object):
         if not check and not is_compact:
             ioutils.inform('Trying to compact', minor=True)
             Git.compact_local(self.path)
-            do_check()
+            do_check(output_always=True)
 
     def cmd_fetch(self):
         ioutils.inform('Fetching %s' % self.path)
