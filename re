@@ -44,6 +44,9 @@ class Program(object):
         for repo in repo_manager.active_repos():
             repo.cmd_compact(check=not do_compact)
 
+        if not do_compact:
+            ioutils.suggest('Run with -c to compact')
+
     def cmd_pull(self, local_repos_arg=None):
         repo_manager = self.get_repo_manager(local_repos_arg=local_repos_arg)
 
