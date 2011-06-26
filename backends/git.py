@@ -242,3 +242,19 @@ class Git(object):
             log.error("Pull error for '%s': %s" % (path, err))
         else:
             return True
+
+    @classmethod
+    def check_compactness_local(cls, path):
+        ret, out, err = ioutils.invoke(path, ['git', 'count-objects'])
+        if ret:
+            log.warn("Failed checking compactness for '%s': %s" % (path, err))
+        else:
+            if out.startswith('0 objects'):
+                return True, out
+            return False, out
+
+    @classmethod
+    def compact_local(cls, path):
+        ret, out, err = ioutils.invoke(path, ['git', 'gc'])
+        if ret:
+            log.error("Compact error for '%s': %s" % (path, err))

@@ -25,7 +25,7 @@ class Program(object):
         else:
             ioutils.suggest('Run with -u to update %s' % REPO_CONFIG)
 
-    def cmd_pull(self, local_repos_arg=None):
+    def get_repo_manager(self, local_repos_arg=None):
         repo_manager = Conf.read_config(REPO_CONFIG)
 
         local_repos = LocalConf.items(REPO_CONFIG_LOCAL)
@@ -35,6 +35,17 @@ class Program(object):
             repo_manager.activate(local_repos)
         else:
             repo_manager.activate_all()
+
+        return repo_manager
+
+    def cmd_compact(self, do_compact=False, local_repos_arg=None):
+        repo_manager = self.get_repo_manager(local_repos_arg=local_repos_arg)
+
+        for repo in repo_manager.active_repos():
+            repo.cmd_compact(check=not do_compact)
+
+    def cmd_pull(self, local_repos_arg=None):
+        repo_manager = self.get_repo_manager(local_repos_arg=local_repos_arg)
 
         # dry run first
         clean = True
@@ -57,11 +68,13 @@ class Program(object):
 if __name__ == '__main__':
     usage = ['%s [command]' % os.path.basename(sys.argv[0])]
     usage.append('\nCommands:')
-    usage.append('  list [-d 1] [-u]           List repositories')
-    usage.append('  pull [repo1 repo2 ...]     Pull repositories')
+    usage.append('  list    [-d 1] [-u]               List repositories')
+    usage.append('  compact [repo1 repo2 ...] [-c]    Compact repositories')
+    usage.append('  pull    [repo1 repo2 ...]         Pull repositories')
     usage = '\n'.join(usage)
     optparser = optparse.OptionParser(usage=usage)
-    optparser.add_option('-d', '--depth', action='store', type="int", help='Recurse to depth')
+    optparser.add_option('-c', '--compact', action='store_true', help='Perform compaction')
+    optparser.add_option('-d', '--depth', action='store', type="int", help='Recurse to given depth')
     optparser.add_option('-u', '--update', action='store_true', help='Update %s' % REPO_CONFIG)
     optparser.add_option('-v', '--verbose', action='store_true', help='Print debug output')
     (options, args) = optparser.parse_args()
@@ -84,6 +97,8 @@ if __name__ == '__main__':
     program = Program()
     if cmd == 'list':
         program.cmd_list(depth=options.depth, update=options.update)
+    elif cmd == 'compact':
+        program.cmd_compact(do_compact=options.compact, local_repos_arg=args)
     elif cmd == 'pull':
         program.cmd_pull(local_repos_arg=args)
     else:
