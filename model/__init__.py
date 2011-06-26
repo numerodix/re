@@ -3,9 +3,7 @@ import logging
 import os
 import re
 
-from backends import Git
 from consts import *
-import ioutils
 from model.git import GitRepo
 
 log = logging
