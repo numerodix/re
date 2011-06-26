@@ -44,7 +44,7 @@ class Branch(object):
         return s.strip()
 
     @classmethod
-    def check_heartbeat(cls, repo):
+    def check_heartbeats(cls, repo):
         for branch in cls.all_branches(repo):
             branch.check_exists()
 
@@ -420,7 +420,7 @@ class GitRepo(object):
         ioutils.inform('Merging %s' % self.path)
 
         # Check branch heartbeats after fetch
-        Branch.check_heartbeat(self)
+        Branch.check_heartbeats(self)
 
         # Branch post process
         self.check_for_stale_local_tracking_branches()
