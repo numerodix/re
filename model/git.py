@@ -326,7 +326,7 @@ class GitRepo(object):
     def do_init_repo(self):
         log.info('Initializing repo')
 
-        os.mkdir(self.path)
+        os.makedirs(self.path)
         Git.repo_init(self.path)
         self.set_remotes_in_checkout()
 
