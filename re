@@ -12,8 +12,36 @@ from consts import *
 from model import RepoManager
 import ioutils
 
+log = logging
+
 
 class Program(object):
+    def scan_fs(self, cwd):
+        locs = []
+        for relpath, dirs, files in os.walk(cwd):
+            log.debug('Scanning %s' % relpath)
+            if REPO_CONFIG in files:
+                relpath = re.sub('^\./', '', relpath)
+                locs.append(relpath)
+        return sorted(locs)
+
+    def invoke(self, bundle, recurse=False):
+        cmd, args, kwargs = bundle
+
+        locs = ['.']
+        if recurse:
+            locs = self.scan_fs('.')
+
+        for loc in locs:
+            try:
+                oldcwd = os.getcwd()
+                os.chdir(loc)
+                if recurse:
+                    ioutils.inform('Entering %s' % loc, major=True)
+                cmd(*args, **kwargs)
+            finally:
+                os.chdir(oldcwd)
+
     def cmd_list(self, depth=None, update=False):
         repo_manager = RepoManager()
         repo_manager.find_repos('.', max_depth=depth)
@@ -79,6 +107,7 @@ if __name__ == '__main__':
     optparser.add_option('-c', '--compact', action='store_true', help='Perform compaction')
     optparser.add_option('-d', '--depth', action='store', type="int", help='Recurse to given depth')
     optparser.add_option('-u', '--update', action='store_true', help='Update %s' % REPO_CONFIG)
+    optparser.add_option('-r', '--recurse', action='store_true', help='Run command recursively')
     optparser.add_option('-v', '--verbose', action='store_true', help='Print debug output')
     (options, args) = optparser.parse_args()
 
@@ -99,10 +128,13 @@ if __name__ == '__main__':
 
     program = Program()
     if cmd == 'list':
-        program.cmd_list(depth=options.depth, update=options.update)
+        bundle = (program.cmd_list, [], {'depth': options.depth, 'update': options.update})
+        program.invoke(bundle, recurse=options.recurse)
     elif cmd == 'compact':
-        program.cmd_compact(do_compact=options.compact, local_repos_arg=args)
+        bundle = (program.cmd_compact, [], {'do_compact': options.compact, 'local_repos_arg': args})
+        program.invoke(bundle, recurse=options.recurse)
     elif cmd == 'pull':
-        program.cmd_pull(local_repos_arg=args)
+        bundle = (program.cmd_pull, [], {'local_repos_arg': args})
+        program.invoke(bundle, recurse=options.recurse)
     else:
         print_help()

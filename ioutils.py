@@ -24,8 +24,10 @@ def invoke(cwd, args):
     return ret, out, err
 
 
-def inform(msg, minor=False):
-    if minor:
+def inform(msg, minor=False, major=False):
+    if major:
+        ansicolor.write_out(ansicolor.yellow('>>> %s\n' % msg))
+    elif minor:
         ansicolor.write_out(ansicolor.cyan('-> %s\n' % msg))
     else:
         ansicolor.write_out(ansicolor.green('> %s\n' % msg))
