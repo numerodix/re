@@ -6,7 +6,7 @@ import re
 from consts import *
 from model.git import GitRepo
 
-log = logging
+logger = logging
 
 VCS_DIRS = (
     '.bzr',
@@ -58,7 +58,7 @@ class RepoManager(object):
 
         dct = {}
         for relpath, dirs, files in os.walk(cwd):
-            log.debug('Scanning %s' % relpath)
+            logger.debug('Scanning %s' % relpath)
             at_location(relpath, dirs, files)
 
         for k in sorted(dct):

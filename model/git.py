@@ -7,7 +7,7 @@ import ioutils
 from model.gitstrings import StrFmt
 import utils
 
-log = logging
+logger = logging
 
 
 class Branch(object):
@@ -48,7 +48,7 @@ class Branch(object):
         for branch in cls.all_branches(repo):
             branch.check_exists()
 
-        log.debug(cls.print_branches(repo))
+        logger.debug(cls.print_branches(repo))
 
 class BranchLocal(Branch):
     def __init__(self, repo, name):
@@ -74,7 +74,7 @@ class BranchLocal(Branch):
             branch.tracked_by = self
             self.tracking = branch
 
-            log.info('Detected local tracking branch %s on %s/%s' %
+            logger.info('Detected local tracking branch %s on %s/%s' %
                       (self.name, rem_name, br_name))
 
     def check_exists(self):
@@ -296,7 +296,7 @@ class GitRepo(object):
         return repo
 
     def set_remotes_in_checkout(self):
-        log.info('Setting remotes in checkout')
+        logger.info('Setting remotes in checkout')
 
         # remove remotes not in model
         remotes_names = Git.get_remotes(self.path)
@@ -324,14 +324,14 @@ class GitRepo(object):
     ### Service methods
 
     def do_init_repo(self):
-        log.info('Initializing repo')
+        logger.info('Initializing repo')
 
         os.makedirs(self.path)
         Git.repo_init(self.path)
         self.set_remotes_in_checkout()
 
     def detect_branches(self, only_remote=False, update_tracking=False):
-        log.info('Detecting branches')
+        logger.info('Detecting branches')
 
         BranchRemoteTracking.detect_branches(self)
         if not only_remote:
@@ -340,10 +340,10 @@ class GitRepo(object):
             for branch in self.branches.values():
                 branch.detect_tracking()
 
-        log.debug(Branch.print_branches(self))
+        logger.debug(Branch.print_branches(self))
 
     def check_for_stale_local_tracking_branches(self):
-        log.info('Checking for stale local tracking branches')
+        logger.info('Checking for stale local tracking branches')
 
         for branch in self.branches.values():
             if getattr(branch, 'tracking', None) and not branch.tracking.exists:
@@ -353,7 +353,7 @@ class GitRepo(object):
                         branch.cmd_remove()
 
     def setup_local_tracking_branches(self):
-        log.info('Setting up local tracking branches')
+        logger.info('Setting up local tracking branches')
 
         remote = Remote.get_canonical_remote(self)
         for branch in remote.branches_tracking.values():
@@ -370,7 +370,7 @@ class GitRepo(object):
                     BranchLocal.cmd_add_tracking(self, branch)
 
     def merge_local_tracking_branches(self):
-        log.info('Merging local tracking branches')
+        logger.info('Merging local tracking branches')
 
         save_commit = Git.get_checked_out_commit(self.path)
 

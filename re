@@ -12,14 +12,14 @@ from consts import *
 from model import RepoManager
 import ioutils
 
-log = logging
+logger = logging
 
 
 class Program(object):
     def scan_fs(self, cwd):
         locs = []
         for relpath, dirs, files in os.walk(cwd):
-            log.debug('Scanning %s' % relpath)
+            logger.debug('Scanning %s' % relpath)
             if REPO_CONFIG in files:
                 relpath = re.sub('^\./', '', relpath)
                 locs.append(relpath)

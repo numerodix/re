@@ -4,14 +4,14 @@ import re
 
 import ioutils
 
-log = logging
+logger = logging
 
 class Git(object):
     @classmethod
     def repo_init(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'init'])
         if ret:
-            log.error("Could not init repo '%s': %s" % \
+            logger.error("Could not init repo '%s': %s" % \
                       (path, err))
 
     @classmethod
@@ -23,7 +23,7 @@ class Git(object):
 
         ret, out, err = ioutils.invoke(path, ['git', 'log', '-n1'])
         if ret:
-            log.error("Could not get checkout commit '%s': %s" % \
+            logger.error("Could not get checkout commit '%s': %s" % \
                       (path, err))
         else:
             m = re.match(r'^commit\s*([a-z0-9]+)', out)
@@ -35,7 +35,7 @@ class Git(object):
     def repo_is_clean(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'status', '--short'])
         if ret:
-            log.error("Could not init repo '%s': %s" % \
+            logger.error("Could not init repo '%s': %s" % \
                       (path, err))
         else:
             if out:
@@ -49,12 +49,12 @@ class Git(object):
     def commit_is_ahead_of(cls, path, first, second):
         ret1, out1, err1 = ioutils.invoke(path, ['git', 'rev-list', first])
         if ret1:
-            log.error("Could not get log for branch %s for '%s': %s" % \
+            logger.error("Could not get log for branch %s for '%s': %s" % \
                       (first, path, err1))
 
         ret2, out2, err2 = ioutils.invoke(path, ['git', 'rev-list', second])
         if ret2:
-            log.error("Could not get log for branch %s for '%s': %s" % \
+            logger.error("Could not get log for branch %s for '%s': %s" % \
                       (second, path, err2))
 
         log = out1.split('\n')[1:]
@@ -70,7 +70,7 @@ class Git(object):
             args += ['apply']
         ret, out, err = ioutils.invoke(path, args)
         if ret:
-            log.error("Could not stash [apply?] repo '%s': %s" % \
+            logger.error("Could not stash [apply?] repo '%s': %s" % \
                       (path, err))
         return True
 
@@ -78,7 +78,7 @@ class Git(object):
     def checkout(cls, path, commit):
         ret, out, err = ioutils.invoke(path, ['git', 'checkout', commit])
         if ret:
-            log.error("Could not checkout %s for '%s': %s" % \
+            logger.error("Could not checkout %s for '%s': %s" % \
                       (commit, path, err))
         return True
 
@@ -87,7 +87,7 @@ class Git(object):
         ret, val, err = ioutils.invoke(path, ['git', 'config', key])
         if ret:
             val = None
-            log.warn("Could not get config key %s for '%s': %s" % \
+            logger.warn("Could not get config key %s for '%s': %s" % \
                       (key, path, err))
         return val
 
@@ -95,7 +95,7 @@ class Git(object):
     def set_conf_key(cls, path, key, value):
         ret, out, err = ioutils.invoke(path, ['git', 'config', key, value])
         if ret:
-            log.error("Could not set config %s=%s for '%s': %s" % \
+            logger.error("Could not set config %s=%s for '%s': %s" % \
                       (key, value, path, err))
 
     @classmethod
@@ -103,7 +103,7 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'remote'])
         if not out:
             val = []
-            log.warn("Could not get remotes for '%s': %s" % \
+            logger.warn("Could not get remotes for '%s': %s" % \
                      (path, err))
         else:
             val = out.split('\n')
@@ -113,7 +113,7 @@ class Git(object):
     def remove_remote(cls, path, name):
         ret, out, err = ioutils.invoke(path, ['git', 'remote', 'rm', name])
         if ret:
-            log.error("Could not remove remote %s for '%s': %s" % \
+            logger.error("Could not remove remote %s for '%s': %s" % \
                       (name, path, err))
 
     @classmethod
@@ -121,7 +121,7 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'branch'])
         if not out:
             val = []
-            log.warn("Could not get local branches for '%s': %s" % \
+            logger.warn("Could not get local branches for '%s': %s" % \
                      (path, err))
         else:
             lst = out.split('\n')
@@ -146,7 +146,7 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'branch', '-r'])
         if not out:
             val = []
-            log.warn("Could not get remote tracking branches for '%s': %s" % \
+            logger.warn("Could not get remote tracking branches for '%s': %s" % \
                      (path, err))
         else:
             val = out.split('\n')
@@ -158,7 +158,7 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'ls-remote', remote])
         if not out:
             val = []
-            log.warn("Could not get remote branches for '%s': %s" % \
+            logger.warn("Could not get remote branches for '%s': %s" % \
                      (path, err))
         else:
             lst = out.split('\n')
@@ -173,7 +173,7 @@ class Git(object):
     def remove_local_branch(cls, path, branch):
         ret, out, err = ioutils.invoke(path, ['git', 'branch', '-D', branch])
         if ret:
-            log.error("Could not remove local branch %s for '%s': %s" % \
+            logger.error("Could not remove local branch %s for '%s': %s" % \
                       (branch, path, err))
 
     @classmethod
@@ -181,7 +181,7 @@ class Git(object):
         arg = ':refs/heads/%s' % branch
         ret, out, err = ioutils.invoke(path, ['git', 'push', remote, arg])
         if ret:
-            log.error("Could not remove remote tracking branch %s/%s for '%s': %s" % \
+            logger.error("Could not remove remote tracking branch %s/%s for '%s': %s" % \
                       (remote, branch, path, err))
 
     @classmethod
@@ -189,7 +189,7 @@ class Git(object):
         arg = '%s/%s' % (remote, branch)
         ret, out, err = ioutils.invoke(path, ['git', 'branch', '--track', branch, arg])
         if ret:
-            log.error("Could not add local tracking branch %s for '%s': %s" % \
+            logger.error("Could not add local tracking branch %s for '%s': %s" % \
                       (branch, path, err))
         else:
             return True
@@ -198,7 +198,7 @@ class Git(object):
     def add_remote(cls, path, name, url):
         ret, out, err = ioutils.invoke(path, ['git', 'remote', 'add', name, url])
         if ret:
-            log.error("Could not add remote %s=%s for '%s': %s" % \
+            logger.error("Could not add remote %s=%s for '%s': %s" % \
                       (name, url, path, err))
 
     @classmethod
@@ -206,7 +206,7 @@ class Git(object):
         os.mkdir(path)
         ret, out, err = ioutils.invoke(path, ['git', 'clone', url, '.'])
         if ret:
-            log.error("Clone error for '%s': %s" % (path, err))
+            logger.error("Clone error for '%s': %s" % (path, err))
         else:
             return True
 
@@ -214,7 +214,7 @@ class Git(object):
     def fetch(cls, path, name):
         ret, out, err = ioutils.invoke(path, ['git', 'fetch', '--prune', name])
         if ret:
-            log.error("Fetch error for '%s' from %s: %s" % (path, name, err))
+            logger.error("Fetch error for '%s' from %s: %s" % (path, name, err))
         else:
             return True
 
@@ -222,7 +222,7 @@ class Git(object):
     def merge(cls, path, branch):
         ret, out, err = ioutils.invoke(path, ['git', 'merge', branch])
         if ret:
-            log.warn("Merge error using branch %s for '%s': %s" % (branch, path, err))
+            logger.warn("Merge error using branch %s for '%s': %s" % (branch, path, err))
         else:
             if out == 'Already up-to-date.':
                 out = ''
@@ -233,13 +233,13 @@ class Git(object):
         # was: git checkout -f <branch>
         ret, out, err = ioutils.invoke(path, ['git', 'reset', '--hard', branch])
         if ret:
-            log.warn("Hard reset failed on branch %s for '%s': %s" % (branch, path, err))
+            logger.warn("Hard reset failed on branch %s for '%s': %s" % (branch, path, err))
 
     @classmethod
     def pull(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'pull'])
         if ret:
-            log.error("Pull error for '%s': %s" % (path, err))
+            logger.error("Pull error for '%s': %s" % (path, err))
         else:
             return True
 
@@ -247,7 +247,7 @@ class Git(object):
     def check_compactness_local(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'count-objects'])
         if ret:
-            log.warn("Failed checking compactness for '%s': %s" % (path, err))
+            logger.warn("Failed checking compactness for '%s': %s" % (path, err))
         else:
             if out.startswith('0 objects'):
                 return True, out
@@ -257,4 +257,4 @@ class Git(object):
     def compact_local(cls, path):
         ret, out, err = ioutils.invoke(path, ['git', 'gc'])
         if ret:
-            log.error("Compact error for '%s': %s" % (path, err))
+            logger.error("Compact error for '%s': %s" % (path, err))

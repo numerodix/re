@@ -3,10 +3,10 @@ import subprocess
 
 from lib import ansicolor
 
-log = logging
+logger = logging
 
 def invoke(cwd, args):
-    log.debug("Invoking: [%s] '%s'" % (cwd, ' '.join(args)))
+    logger.debug("Invoking: [%s] '%s'" % (cwd, ' '.join(args)))
     popen = subprocess.Popen(args, cwd=cwd,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = popen.communicate()
@@ -16,11 +16,11 @@ def invoke(cwd, args):
     if out:
         lines = out.split('\n')
         for line in lines:
-            log.debug("> %s" % ansicolor.blue(line))
+            logger.debug("> %s" % ansicolor.blue(line))
     if ret:
         if not err:
             err = ret
-        log.warn("Returned %s" % (err))
+        logger.warn("Returned %s" % (err))
     return ret, out, err
 
 
