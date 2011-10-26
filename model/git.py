@@ -347,10 +347,14 @@ class GitRepo(object):
 
         for branch in self.branches.values():
             if getattr(branch, 'tracking', None) and not branch.tracking.exists:
-                if not branch.is_checked_out():
-                    if ioutils.prompt('Stale local tracking branch %s, remove?' %
-                                      branch.name, minor=True):
-                        branch.cmd_remove()
+                if ioutils.prompt('Stale local tracking branch %s, remove?' %
+                                  branch.name, minor=True):
+                    # check out another branch
+                    if branch.is_checked_out():
+                        others = filter(lambda x: x != branch, self.branches.values())
+                        others[0].cmd_checkout()
+                    branch.cmd_remove()
+                    del(self.branches[branch.name])
 
     def setup_local_tracking_branches(self):
         logger.info('Setting up local tracking branches')
