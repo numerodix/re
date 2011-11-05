@@ -193,7 +193,7 @@ class Remote(object):
     def __init__(self, repo, name=None):
         self.repo = repo
         self.name = name and name or CANONICAL_REMOTE
-        self.is_canonical = False
+        self.is_canonical = name == CANONICAL_REMOTE
         self.urls = {}
         self.branches_tracking = {}
         self.branches_remote = {}
