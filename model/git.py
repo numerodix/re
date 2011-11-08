@@ -352,7 +352,8 @@ class GitRepo(object):
                     # check out another branch
                     if branch.is_checked_out():
                         others = filter(lambda x: x != branch, self.branches.values())
-                        others[0].cmd_checkout()
+                        if not others[0].cmd_checkout():
+                            continue
                     branch.cmd_remove()
                     del(self.branches[branch.name])
 
