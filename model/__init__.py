@@ -4,6 +4,7 @@ import os
 import re
 
 from consts import *
+from imports import OrderedDict
 from model.git import GitRepo
 
 logger = logging
@@ -21,7 +22,7 @@ class RepoManager(object):
     repotypes = [GitRepo]
 
     def __init__(self):
-        self.repos = collections.OrderedDict()
+        self.repos = OrderedDict()
 
     def find_repos(self, cwd, max_depth=None):
         def clear_list(lst):

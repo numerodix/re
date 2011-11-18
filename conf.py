@@ -1,9 +1,9 @@
-import collections
 import os
 import re
 import string
 import sys
 
+from imports import OrderedDict
 from model import RepoManager
 
 class Conf(object):
@@ -27,7 +27,7 @@ class Conf(object):
         lines = open(filepath).readlines()
         repo_manager = RepoManager()
 
-        dct = collections.OrderedDict()
+        dct = OrderedDict()
         cur_section = None
         for line in lines:
             if line.startswith('['):
@@ -36,7 +36,7 @@ class Conf(object):
             elif line.startswith(' '):
                 key, val = re.findall(r'^[ ]{4}([^ ]+)\s*=\s*([^ ]+)$', line)[0]
                 if not cur_section in dct:
-                    dct[cur_section] = collections.OrderedDict()
+                    dct[cur_section] = OrderedDict()
                 dct[cur_section][key.strip()] = val.strip()
 
         for section, d in dct.items():
