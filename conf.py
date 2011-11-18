@@ -3,7 +3,7 @@ import re
 import string
 import sys
 
-from imports import OrderedDict
+from lib import OrderedDict
 from model import RepoManager
 
 class Conf(object):

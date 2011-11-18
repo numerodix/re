@@ -4,7 +4,7 @@ import os
 import re
 
 from consts import *
-from imports import OrderedDict
+from lib import OrderedDict
 from model.git import GitRepo
 
 logger = logging
