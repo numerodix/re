@@ -42,9 +42,10 @@ class Program(object):
             finally:
                 os.chdir(oldcwd)
 
-    def cmd_list(self, depth=None, update=False):
+    def cmd_list(self, depth=None, excluded_dirs='', update=False):
         repo_manager = RepoManager()
-        repo_manager.find_repos('.', max_depth=depth)
+        excluded_dirs = excluded_dirs.split(',')
+        repo_manager.find_repos('.', max_depth=depth, excluded_dirs=excluded_dirs)
 
         Conf.write_config(repo_manager, filehandle=sys.stdout)
         if update:
@@ -106,6 +107,7 @@ if __name__ == '__main__':
     optparser = optparse.OptionParser(usage=usage)
     optparser.add_option('-c', '--compact', action='store_true', help='Perform compaction')
     optparser.add_option('-d', '--depth', action='store', type="int", help='Recurse to given depth')
+    optparser.add_option('-E', '--exclude', action='store', help='Directories to exclude from scan')
     optparser.add_option('-u', '--update', action='store_true', help='Update %s' % REPO_CONFIG)
     optparser.add_option('-r', '--recurse', action='store_true', help='Run command recursively')
     optparser.add_option('-v', '--verbose', action='store_true', help='Print debug output')
@@ -128,7 +130,9 @@ if __name__ == '__main__':
 
     program = Program()
     if cmd == 'list':
-        bundle = (program.cmd_list, [], {'depth': options.depth, 'update': options.update})
+        bundle = (program.cmd_list, [], {'depth': options.depth,
+                                         'excluded_dirs': options.exclude,
+                                         'update': options.update})
         program.invoke(bundle, recurse=options.recurse)
     elif cmd == 'compact':
         bundle = (program.cmd_compact, [], {'do_compact': options.compact, 'local_repos_arg': args})

@@ -24,7 +24,9 @@ class RepoManager(object):
     def __init__(self):
         self.repos = OrderedDict()
 
-    def find_repos(self, cwd, max_depth=None):
+    def find_repos(self, cwd, max_depth=None, excluded_dirs=None):
+        excluded_dirs = excluded_dirs or []
+
         def clear_list(lst):
             while True:
                 try: lst.pop()
@@ -42,7 +44,7 @@ class RepoManager(object):
                         dct[repo.path] = repo
 
                 # don't traverse vcs dirs
-                if d in VCS_DIRS:
+                if d in VCS_DIRS or d in excluded_dirs:
                     dirs.remove(d)
 
             # reached recursion depth
