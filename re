@@ -44,7 +44,7 @@ class Program(object):
 
     def cmd_list(self, depth=None, excluded_dirs='', update=False):
         repo_manager = RepoManager()
-        excluded_dirs = excluded_dirs.split(',')
+        excluded_dirs = excluded_dirs and excluded_dirs.split(',') or []
         repo_manager.find_repos('.', max_depth=depth, excluded_dirs=excluded_dirs)
 
         Conf.write_config(repo_manager, filehandle=sys.stdout)
