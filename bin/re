@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
+
 import collections
 import logging
 import optparse
@@ -7,10 +9,15 @@ import os
 import re
 import sys
 
-from conf import Conf, LocalConf
-from consts import *
-from model import RepoManager
-import ioutils
+try:
+    import reps
+except ImportError:
+    sys.path.append('.')
+
+from reps import ioutils
+from reps.conf import Conf, LocalConf
+from reps.consts import *
+from reps.model import RepoManager
 
 logger = logging
 

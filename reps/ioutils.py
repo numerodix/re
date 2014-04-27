@@ -1,9 +1,12 @@
+from __future__ import absolute_import
+
 import logging
 import subprocess
 
-from lib import ansicolor
+import ansicolor
 
 logger = logging
+
 
 def invoke(cwd, args):
     logger.debug("Invoking: [%s] '%s'" % (cwd, ' '.join(args)))

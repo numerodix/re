@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+
+
 class StrFmt(object):
     @classmethod
     def split_cfg_key(cls, key):

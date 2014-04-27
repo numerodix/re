@@ -1,11 +1,13 @@
+from __future__ import absolute_import
+
 import collections
 import logging
 import os
 import re
 
-from consts import *
-from lib import OrderedDict
-from model.git import GitRepo
+from reps.consts import *
+from reps.compat import OrderedDict
+from reps.model.git import GitRepo
 
 logger = logging
 

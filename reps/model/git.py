@@ -1,11 +1,13 @@
+from __future__ import absolute_import
+
 import logging
 import os
 
-from backends import Git
-from consts import CANONICAL_REMOTE
-import ioutils
-from model.gitstrings import StrFmt
-import utils
+from reps import ioutils
+from reps import utils
+from reps.backends import Git
+from reps.consts import CANONICAL_REMOTE
+from reps.model.gitstrings import StrFmt
 
 logger = logging
 

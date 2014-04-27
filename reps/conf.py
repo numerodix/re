@@ -1,10 +1,13 @@
+from __future__ import absolute_import
+
 import os
 import re
 import string
 import sys
 
-from lib import OrderedDict
-from model import RepoManager
+from reps.compat import OrderedDict
+from reps.model import RepoManager
+
 
 class Conf(object):
     @classmethod

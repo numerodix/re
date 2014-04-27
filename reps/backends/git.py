@@ -1,10 +1,13 @@
+from __future__ import absolute_import
+
 import logging
 import os
 import re
 
-import ioutils
+from reps import ioutils
 
 logger = logging
+
 
 class Git(object):
     @classmethod
