@@ -25,7 +25,7 @@ Detecting your repositories
 
 Usage of ``re`` is centered around the contents of ``.reconfig`` in the
 current working directory. To generate a ``.reconfig`` from some repositories
-you have at hand::
+you have at hand.
 
 .. code:: bash
 
@@ -45,7 +45,7 @@ Re-run with ``-u`` to write the detected config to ``.reconfig``.
 Updating repositories
 ^^^^^^^^^^^^^^^^^^^^^
 
-The most common use case for ``re`` is simply syncing your repos::
+The most common use case for ``re`` is simply syncing your repos.
 
 .. code:: bash
 
