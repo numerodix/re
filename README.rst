@@ -25,7 +25,7 @@ Detecting your repositories
 
 Usage of ``re`` is centered around the contents of ``.reconfig`` in the
 current working directory. To generate a ``.reconfig`` from some repositories
-you have at hand.
+you have at hand...
 
 .. code:: bash
 
