@@ -1,5 +1,3 @@
-import os
-
 from setuptools import find_packages
 from setuptools import setup
 
@@ -15,7 +13,7 @@ setup(
     url='https://github.com/numerodix/re',
 
     packages=find_packages('.'),
-    package_dir = {'': '.'},
+    package_dir={'': '.'},
 
     install_requires=[
         'ansicolor',

@@ -1,4 +1,4 @@
 from __future__ import absolute_import
 
 
-from reps.backends.git import Git
+from reps.backends.git import Git  # noqa

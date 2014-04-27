@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import os
 import re
 import string
-import sys
 
 from reps.compat import OrderedDict
 from reps.model import RepoManager

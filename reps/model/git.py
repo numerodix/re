@@ -71,13 +71,13 @@ class BranchLocal(Branch):
 
             remote = Remote.get_remote(self.repo, rem_name)
             branch = BranchRemoteTracking.get_branch(self.repo, remote, longname,
-                                                      br_name)
+                                                     br_name)
 
             branch.tracked_by = self
             self.tracking = branch
 
             logger.info('Detected local tracking branch %s on %s/%s' %
-                      (self.name, rem_name, br_name))
+                        (self.name, rem_name, br_name))
 
     def check_exists(self):
         found = False
@@ -189,7 +189,8 @@ class BranchRemoteTracking(Branch):
             remote = Remote.get_remote(repo, remote)
             branch = BranchRemoteTracking.get_branch(repo, remote, longname, name)
 
-class BranchRemote(Branch): pass
+class BranchRemote(Branch):
+    pass
 
 class Remote(object):
     def __init__(self, repo, name=None):
@@ -249,7 +250,7 @@ class GitRepo(object):
 
             remote = Remote(repo, name)
             if not repo.remotes:  # this is the first remote
-                remote.is_canonical = True 
+                remote.is_canonical = True
             if not remote.name in repo.remotes:
                 repo.remotes[remote.name] = remote
 
