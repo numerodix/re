@@ -67,7 +67,7 @@ class BranchLocal(Branch):
         longname = Git.get_conf_key(self.repo.path, merge_pointer)
 
         if rem_name and longname:
-            _, _, br_name = StrFmt.split_branch_longname(longname)
+            _, _, br_name = StrFmt.split_branch_longname(longname, parts=3)
 
             remote = Remote.get_remote(self.repo, rem_name)
             branch = BranchRemoteTracking.get_branch(self.repo, remote, longname,
