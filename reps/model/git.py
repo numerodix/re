@@ -185,7 +185,7 @@ class BranchRemoteTracking(Branch):
         for longname in Git.get_branches_remote_tracking(repo.path):
             if 'HEAD' in longname:  # special case
                 continue
-            remote, name = StrFmt.split_branch_longname(longname)
+            remote, name = StrFmt.split_branch_longname(longname, parts=2)
             remote = Remote.get_remote(repo, remote)
             branch = BranchRemoteTracking.get_branch(repo, remote, longname, name)
 

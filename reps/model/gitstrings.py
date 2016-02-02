@@ -19,8 +19,15 @@ class StrFmt(object):
         return 'remote.%s.%s' % (name, url)
 
     @classmethod
-    def split_branch_longname(cls, name):
-        return name.split('/')
+    def split_branch_longname(cls, name, parts=None):
+        '''For git flow the branch name will be origin/feature/redbutton, in
+        which case the name is feature/redbutton, so we need to pass
+        parts=2.'''
+        if parts:
+            pieces = name.split('/', parts - 1)
+        else:
+            pieces = name.split('/')
+        return pieces
 
     @classmethod
     def fmt_branch_longname(cls, name):
