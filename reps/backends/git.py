@@ -50,12 +50,16 @@ class Git(object):
 
     @classmethod
     def commit_is_ahead_of(cls, path, first, second):
-        ret1, out1, err1 = ioutils.invoke(path, ['git', 'rev-list', first])
+        # NOTE: terminate with -- to ensure the branch name is not mistaken for
+        # a path with a matching name
+        ret1, out1, err1 = ioutils.invoke(path, ['git', 'rev-list', first, '--'])
         if ret1:
             logger.error("Could not get log for branch %s for '%s': %s" %
                          (first, path, err1))
 
-        ret2, out2, err2 = ioutils.invoke(path, ['git', 'rev-list', second])
+        # NOTE: terminate with -- to ensure the branch name is not mistaken for
+        # a path with a matching name
+        ret2, out2, err2 = ioutils.invoke(path, ['git', 'rev-list', second, '--'])
         if ret2:
             logger.error("Could not get log for branch %s for '%s': %s" %
                          (second, path, err2))
