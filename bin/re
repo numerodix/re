@@ -18,6 +18,7 @@ from reps import ioutils
 from reps.conf import Conf, LocalConf
 from reps.consts import *
 from reps.model import RepoManager
+import reps
 
 logger = logging
 
@@ -118,11 +119,17 @@ if __name__ == '__main__':
     optparser.add_option('-u', '--update', action='store_true', help='Update %s' % REPO_CONFIG)
     optparser.add_option('-r', '--recurse', action='store_true', help='Run command recursively')
     optparser.add_option('-v', '--verbose', action='store_true', help='Print debug output')
+    optparser.add_option('-V', '--version', action='store_true', help='Print version')
     (options, args) = optparser.parse_args()
 
     def print_help():
         optparser.print_help()
         sys.exit(2)
+
+    if options.version:
+        print(reps.__version__)
+        sys.exit(0)
+
 
     try:
         cmd = args.pop(0)

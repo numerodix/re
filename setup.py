@@ -1,7 +1,20 @@
+import os
+import re
+
 from setuptools import find_packages
 from setuptools import setup
 
 import reps
+
+
+def load_requirements():
+    path = os.path.dirname(__file__)
+    filepath = os.path.join(path, 'requirements.txt')
+    with open(filepath, 'rb') as f:
+        content = f.read()
+        lines = content.splitlines()
+        lines = [re.sub('#.*$', '', line) for line in lines if line.strip()]
+        return lines
 
 
 setup(
@@ -15,10 +28,7 @@ setup(
     packages=find_packages('.'),
     package_dir={'': '.'},
 
-    install_requires=[
-        'ansicolor',
-        'ordereddict',
-    ],
+    install_requires=load_requirements(),
 
     # don't install as zipped egg
     zip_safe=False,
