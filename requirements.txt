@@ -1,2 +1,0 @@
-ansicolor==0.2.4
-ordereddict==1.1
