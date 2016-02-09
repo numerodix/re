@@ -63,7 +63,11 @@ class Program(object):
             ioutils.suggest('Run with -u to update %s' % REPO_CONFIG)
 
     def get_repo_manager(self, local_repos_arg=None):
-        repo_manager = Conf.read_config(REPO_CONFIG)
+        try:
+            repo_manager = Conf.read_config(REPO_CONFIG)
+        except IOError:
+            ioutils.complain("Could not read: %s" % REPO_CONFIG)
+            sys.exit(1)
 
         local_repos = LocalConf.items(REPO_CONFIG_LOCAL)
         if local_repos_arg:
