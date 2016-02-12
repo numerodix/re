@@ -230,6 +230,7 @@ class Git(object):
         ret, out, err = ioutils.invoke(path, ['git', 'merge', branch])
         if ret:
             logger.warn("Merge error using branch %s for '%s': %s" % (branch, path, err))
+            return False, out
         else:
             if out == 'Already up-to-date.':
                 out = ''
