@@ -381,6 +381,9 @@ class GitRepo(object):
         logger.info('Merging local tracking branches')
 
         save_commit = Git.get_checked_out_commit(self.path)
+        if save_commit is None:
+            ioutils.complain('Failed to get last commit for %s' % self.path)
+            return
 
         # checkout current branch in case repo has just been cloned and workdir
         # is empty

@@ -28,10 +28,12 @@ class Git(object):
         if ret:
             logger.error("Could not get checkout commit '%s': %s" %
                          (path, err))
-        else:
-            m = re.match(r'^commit\s*([a-z0-9]+)', out)
-            if m:
-                val = m.group(1)
+            return None
+
+        m = re.match(r'^commit\s*([a-z0-9]+)', out)
+        if m:
+            val = m.group(1)
+
         return val
 
     @classmethod
