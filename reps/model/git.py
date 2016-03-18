@@ -391,12 +391,14 @@ class GitRepo(object):
             if save_commit in self.branches:
                 self.branches[save_commit].cmd_checkout()
 
+        # if the workdir is not clean we will stash it first
         stashed = False
         if not Git.repo_is_clean(self.path):
             if Git.stash(self.path):
                 ioutils.inform('Repo is dirty, stashed at %s' % save_commit, minor=True)
                 stashed = True
 
+        # merge all tracking branches
         for branch in self.branches.values():
             if branch.tracking:
                 if not branch.cmd_merge(branch.tracking):
@@ -404,6 +406,12 @@ class GitRepo(object):
                                      (branch.name, branch.tracking.remote.name,
                                       branch.tracking.name), minor=True)
 
+        # check out the "current branch" again - so we end on the same branch
+        # checked out as we had in the beginning
+        if save_commit in self.branches:
+            self.branches[save_commit].cmd_checkout()
+
+        # apply the stash back onto the workdir (could create a conflict)
         if Git.checkout(self.path, save_commit):
             if stashed and Git.stash(self.path, apply=True):
                 ioutils.inform('Restored stash at %s' % save_commit, minor=True)
