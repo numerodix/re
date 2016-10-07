@@ -5,6 +5,7 @@ import os
 import re
 
 from reps import consts
+from reps import ioutils
 from reps.compat import OrderedDict
 from reps.model.git import GitRepo
 
@@ -88,6 +89,8 @@ class RepoManager(object):
         for path in paths:
             if path in self.repos:
                 self.repos[path].is_active = True
+            else:
+                ioutils.complain("Skipping unknown repo: %s" % path)
 
     def activate_all(self):
         for _, repo in self.repos.items():
