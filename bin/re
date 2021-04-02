@@ -14,9 +14,9 @@ try:
 except ImportError:
     sys.path.append('.')
 
+from reps import consts
 from reps import ioutils
 from reps.conf import Conf, LocalConf
-from reps.consts import *
 from reps.model import RepoManager
 import reps
 
@@ -28,7 +28,7 @@ class Program(object):
         locs = []
         for relpath, dirs, files in os.walk(cwd):
             logger.debug('Scanning %s' % relpath)
-            if REPO_CONFIG in files:
+            if consts.REPO_CONFIG in files:
                 relpath = re.sub('^\./', '', relpath)
                 locs.append(relpath)
         return sorted(locs)
@@ -57,10 +57,10 @@ class Program(object):
 
         Conf.write_config(repo_manager, filehandle=sys.stdout)
         if update:
-            Conf.write_config(repo_manager, filepath=REPO_CONFIG)
-            ioutils.inform('Wrote %s' % REPO_CONFIG)
+            Conf.write_config(repo_manager, filepath=consts.REPO_CONFIG)
+            ioutils.inform('Wrote %s' % consts.REPO_CONFIG)
         else:
-            ioutils.suggest('Run with -u to update %s' % REPO_CONFIG)
+            ioutils.suggest('Run with -u to update %s' % consts.REPO_CONFIG)
 
     def get_repo_manager(self, local_repos_arg=None):
         # NOTE: If the only argument is '.' then it's an in-repo pull and we
@@ -71,12 +71,12 @@ class Program(object):
             os.chdir('..')
 
         try:
-            repo_manager = Conf.read_config(REPO_CONFIG)
+            repo_manager = Conf.read_config(consts.REPO_CONFIG)
         except IOError:
-            ioutils.complain("Could not read: %s" % REPO_CONFIG)
+            ioutils.complain("Could not read: %s" % consts.REPO_CONFIG)
             sys.exit(1)
 
-        local_repos = LocalConf.items(REPO_CONFIG_LOCAL)
+        local_repos = LocalConf.items(consts.REPO_CONFIG_LOCAL)
         if local_repos_arg:
             repo_manager.activate(local_repos_arg)
         elif local_repos:
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     optparser.add_option('-c', '--compact', action='store_true', help='Perform compaction')
     optparser.add_option('-d', '--depth', action='store', type="int", help='Recurse to given depth')
     optparser.add_option('-E', '--exclude', action='store', help='Directories to exclude from scan')
-    optparser.add_option('-u', '--update', action='store_true', help='Update %s' % REPO_CONFIG)
+    optparser.add_option('-u', '--update', action='store_true', help='Update %s' % consts.REPO_CONFIG)
     optparser.add_option('-r', '--recurse', action='store_true', help='Run command recursively')
     optparser.add_option('-v', '--verbose', action='store_true', help='Print debug output')
     optparser.add_option('-V', '--version', action='store_true', help='Print version')
