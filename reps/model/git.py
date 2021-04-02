@@ -259,11 +259,11 @@ class GitRepo(object):
         return repo
 
     def attributes_to_cfg(self):
-        names = self.remotes.keys()
+        names = list(self.remotes.keys())
         names.sort()
 
         # find canonical remote
-        remotes = filter(lambda r: r.is_canonical, self.remotes.values())
+        remotes = list(filter(lambda r: r.is_canonical, self.remotes.values()))
         if remotes:
             name = remotes[0].name
             names = utils.sort_with_elem_as_first(name, names)
@@ -271,7 +271,7 @@ class GitRepo(object):
         for key in names:
             remote = self.remotes[key]
 
-            urls = remote.urls.keys()
+            urls = list(remote.urls.keys())
             urls = utils.sort_with_elem_as_first('url', urls)
 
             for att in urls:
