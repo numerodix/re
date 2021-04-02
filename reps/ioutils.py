@@ -8,13 +8,19 @@ import ansicolor
 logger = logging
 
 
+def maybe_decode(value):
+    if type(value) == bytes:
+        return value.decode()
+    return value
+
+
 def invoke(cwd, args):
     logger.debug("Invoking: [%s] '%s'" % (cwd, ' '.join(args)))
     popen = subprocess.Popen(args, cwd=cwd,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = popen.communicate()
-    out = str(out).strip()
-    err = str(err).strip()
+    out = maybe_decode(out).strip()
+    err = maybe_decode(err).strip()
     ret = popen.returncode
     if out:
         lines = out.split('\n')
