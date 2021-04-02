@@ -22,7 +22,7 @@ class Conf(object):
             filehandle.write(s)
         else:
             with open(filepath, 'wb') as fp:
-                fp.write(s)
+                fp.write(s.encode())
 
     @classmethod
     def read_config(cls, filepath):
