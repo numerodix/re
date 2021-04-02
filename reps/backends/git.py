@@ -147,7 +147,7 @@ class Git(object):
     @classmethod
     def get_branches_local(cls, path):
         pairs = cls._get_branches_local(path)
-        lst = map(lambda (active, name): name, pairs)
+        lst = map(lambda active_name: active_name[1], pairs)
         return lst
 
     @classmethod
