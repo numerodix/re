@@ -19,7 +19,7 @@ setup(
     package_dir={'': '.'},
 
     install_requires=[
-        'ansicolor==0.2.4',
+        'ansicolor',
         'ordereddict==1.1',
     ],
 
