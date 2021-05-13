@@ -8,6 +8,11 @@ import ansicolor
 logger = logging
 
 
+try:
+    input_func = raw_input
+except NameError:
+    input_func = input
+
 def maybe_decode(value):
     if type(value) == bytes:
         return value.decode()
@@ -63,7 +68,7 @@ def prompt(msg, minor=False, default_yes=False):
         ansicolor.write_out(ansicolor.magenta('-> %s %s ' % (msg, prompt)))
     else:
         ansicolor.write_out(ansicolor.magenta('> %s %s ' % (msg, prompt)))
-    inp = raw_input()
+    inp = input_func()
 
     if default_yes:
         return False if 'n' in inp else True
