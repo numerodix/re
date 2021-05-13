@@ -348,7 +348,7 @@ class GitRepo(object):
     def check_for_stale_local_tracking_branches(self):
         logger.info('Checking for stale local tracking branches')
 
-        for branch in self.branches.values():
+        for branch in list(self.branches.values()):
             if getattr(branch, 'tracking', None) and not branch.tracking.exists:
                 if ioutils.prompt('Stale local tracking branch %s, remove?' %
                                   branch.name, minor=True):
