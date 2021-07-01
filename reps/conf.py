@@ -33,7 +33,7 @@ class Conf(object):
         cur_section = None
         for line in lines:
             if line.startswith('['):
-                section = re.findall(r'^[[](.*?)[]]$', line)[0]
+                section = re.findall(r'^\[(.*?)\]$', line)[0]
                 cur_section = section.strip()
             elif line.startswith(' '):
                 key, val = re.findall(r'^[ ]{4}([^ ]+)\s*=\s*([^ ]+)$', line)[0]
