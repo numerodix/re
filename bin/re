@@ -63,6 +63,12 @@ class Program(object):
             ioutils.suggest('Run with -u to update %s' % consts.REPO_CONFIG)
 
     def get_repo_manager(self, local_repos_arg=None):
+        # strip off trailing / because dir names cannot contain a /
+        # the / is likely there due to tab completion in the terminal
+        for i, arg in enumerate(local_repos_arg):
+            if len(arg) > 1 and arg.endswith('/'):
+                local_repos_arg[i] = arg[:-1]
+
         # NOTE: If the only argument is '.' then it's an in-repo pull and we
         # rewrite local_repos_arg to the current dir and then navigate one dir
         # up the tree to find the .reconfig there.
