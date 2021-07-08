@@ -409,12 +409,11 @@ class GitRepo(object):
         # check out the "current branch" again - so we end on the same branch
         # checked out as we had in the beginning
         if save_commit in self.branches:
-            self.branches[save_commit].cmd_checkout()
+            if Git.checkout(self.path, save_commit):
 
-        # apply the stash back onto the workdir (could create a conflict)
-        if Git.checkout(self.path, save_commit):
-            if stashed and Git.stash(self.path, apply=True):
-                ioutils.inform('Restored stash at %s' % save_commit, minor=True)
+                # apply the stash back onto the workdir (could create a conflict)
+                if stashed and Git.stash(self.path, apply=True):
+                    ioutils.inform('Restored stash at %s' % save_commit, minor=True)
 
     ### Commands
 
