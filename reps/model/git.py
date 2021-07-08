@@ -324,6 +324,18 @@ class GitRepo(object):
         if os.path.exists(os.path.join(self.path, '.git')):
             return True
 
+    def get_branch_to_checkout_after_deletion(self, branch):
+        # Try to select either 'master' or 'main' if they exist in the repo
+        defaults = ['master', 'main']
+        for branch_name in defaults:
+            branch = self.branches.get(branch_name)
+            if branch is not None:
+                return branch
+
+        # Fall back on returning any other branch we have available
+        others = list(filter(lambda x: x != branch, self.branches.values()))
+        return others[0]
+
     ### Service methods
 
     def do_init_repo(self):
@@ -354,8 +366,8 @@ class GitRepo(object):
                                   branch.name, minor=True):
                     # check out another branch
                     if branch.is_checked_out():
-                        others = list(filter(lambda x: x != branch, self.branches.values()))
-                        if not others[0].cmd_checkout():
+                        other_branch = self.get_branch_to_checkout_after_deletion(branch)
+                        if not other_branch.cmd_checkout():
                             continue
                     branch.cmd_remove()
                     del(self.branches[branch.name])
