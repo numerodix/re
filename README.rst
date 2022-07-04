@@ -4,7 +4,7 @@ reps
 .. image:: https://badge.fury.io/py/reps.png
         :target: https://badge.fury.io/py/reps
 
-.. image:: https://pypip.in/license/reps/badge.png
+.. image:: https://img.shields.io/pypi/l/reps.svg
         :target: https://pypi.python.org/pypi/reps/
 
 
