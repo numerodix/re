@@ -29,7 +29,7 @@ class Program(object):
         for relpath, dirs, files in os.walk(cwd):
             logger.debug('Scanning %s' % relpath)
             if consts.REPO_CONFIG in files:
-                relpath = re.sub('^\./', '', relpath)
+                relpath = re.sub(r'^\./', '', relpath)
                 locs.append(relpath)
         return sorted(locs)
 
